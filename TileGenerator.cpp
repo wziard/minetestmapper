@@ -485,9 +485,9 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 						m_image->tpixels[imageY][imageX] = rgb2int(c.r, c.g, c.b);
 						m_readedPixels[z] |= (1 << x);
 						m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
-					}
-					else {
+					} else {
 						m_unknownNodes.insert(name);
+						continue;
 					}
 					break;
 				}
