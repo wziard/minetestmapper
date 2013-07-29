@@ -1,0 +1,8 @@
+colors.h
+colors.txt
+minetest_mapper
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
