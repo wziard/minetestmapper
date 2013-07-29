@@ -68,13 +68,13 @@ set(mapper_SRCS
 	mapper.cpp
 )
 
-add_executable(minetest_mapper
+add_executable(minetestmapper
 	${mapper_HDRS}
 	${mapper_SRCS}
 )
 
 target_link_libraries(
-	minetest_mapper
+	minetestmapper
 	${LIBSQLITE3_LIBRARIES}
 	gd
 	z

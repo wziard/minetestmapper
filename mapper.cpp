@@ -19,18 +19,18 @@ using namespace std;
 
 void usage()
 {
-	 const char *usage_text = "minetestmapper.py [options]\n\
-  -i/--input <world_path>\n\
-  -o/--output <output_image.png>\n\
-  --bgcolor <color>\n\
-  --scalecolor <color>\n\
-  --playercolor <color>\n\
-  --origincolor <color>\n\
-  --drawscale\n\
-  --drawplayers\n\
-  --draworigin\n\
-  --geometry x:y+w+h\n\
-Color format: '#000000'\n";
+	const char *usage_text = "minetestmapper [options]\n"
+			"  -i/--input <world_path>\n"
+			"  -o/--output <output_image.png>\n"
+			"  --bgcolor <color>\n"
+			"  --scalecolor <color>\n"
+			"  --playercolor <color>\n"
+			"  --origincolor <color>\n"
+			"  --drawscale\n"
+			"  --drawplayers\n"
+			"  --draworigin\n"
+			"  --geometry x:y+w+h\n"
+			"Color format: '#000000'\n";
 	std::cout << usage_text;
 }
 
