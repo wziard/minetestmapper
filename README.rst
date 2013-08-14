@@ -1,7 +1,7 @@
 Minetest Mapper C++
 ===================
 
-A port of minetestmapper.py to C++ from https://github.com/celeron55/minetest/tree/master/util
+A port of minetestmapper.py to C++ from https://github.com/minetest/minetest/tree/master/util
 
 Requirements
 ------------
@@ -15,20 +15,18 @@ Compilation
 
 ::
 
-    git clone git://github.com/mireq/minetest-mapper-cpp.git minetest-mapper-cpp
-    cd minetest-mapper-cpp/
     cmake .
     make
 
 Usage
 -----
 
-Binary `minetest_mapper` has two mandatory paremeters, `-i` (input world path)
+Binary `minetestmapper` has two mandatory paremeters, `-i` (input world path)
 and `-o` (output image path).
 
 ::
 
-    ./minetest_mapper -i /home/user/.minetest/worlds/my_world/ -o /home/user/map.png
+    ./minetestmapper -i ~/.minetest/worlds/my_world/ -o ~/map.png
 
 
 Parameters
