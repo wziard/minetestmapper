@@ -15,6 +15,8 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <cerrno>
+#include <cstring>
 #include "config.h"
 #include "PlayerAttributes.h"
 #include "TileGenerator.h"
@@ -630,6 +632,11 @@ void TileGenerator::writeImage(const std::string &output)
 {
 	FILE *out;
 	out = fopen(output.c_str(), "wb");
+	if (!out) {
+		std::ostringstream oss;
+		oss << "Error opening '" << output.c_str() << "': " << std::strerror(errno);
+		throw std::runtime_error(oss.str());
+	}
 	gdImagePng(m_image, out);
 	fclose(out);
 	gdImageDestroy(m_image);
