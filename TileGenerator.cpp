@@ -187,13 +187,13 @@ void TileGenerator::setShading(bool shading)
 void TileGenerator::setGeometry(int x, int y, int w, int h)
 {
 	if (x > 0) {
-		m_geomX = (x + 15) / 16;
+		m_geomX = x / 16;
 	}
 	else {
 		m_geomX = (x - 15) / 16;
 	}
 	if (y > 0) {
-		m_geomY = (y + 15) / 16;
+		m_geomY = y / 16;
 	}
 	else {
 		m_geomY = (y - 15) / 16;
@@ -203,13 +203,13 @@ void TileGenerator::setGeometry(int x, int y, int w, int h)
 	int y2 = y + h;
 
 	if (x2 > 0) {
-		m_geomX2 = (x2 + 15) / 16;
+		m_geomX2 = x2 / 16;
 	}
 	else {
 		m_geomX2 = (x2 - 15) / 16;
 	}
 	if (y2 > 0) {
-		m_geomY2 = (y2 + 15) / 16;
+		m_geomY2 = y2 / 16;
 	}
 	else {
 		m_geomY2 = (y2 - 15) / 16;
@@ -308,7 +308,7 @@ void TileGenerator::loadBlocks()
 	std::vector<int64_t> vec = m_db->getBlockPos();
 	for(unsigned int i = 0; i < vec.size(); i++) {
 		BlockPos pos = decodeBlockPos(vec[i]);
-		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
+		if (pos.x < m_geomX || pos.x > m_geomX2 || pos.z < m_geomY || pos.z > m_geomY2) {
 			continue;
 		}
 		if (pos.y < m_yMin * 16) {
