@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
 		{"drawscale", no_argument, 0, 'S'},
 		{"noshading", no_argument, 0, 'H'},
 		{"geometry", required_argument, 0, 'g'},
+		{"min-y", required_argument, 0, 'a'},
+		{"max-y", required_argument, 0, 'c'},
 	};
 
 	string input;
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
 		if (c == -1) {
 			if (input.empty() || output.empty()) {
 				usage();
-				return -1;
+				return 0;
 			}
 			break;
 		}
@@ -104,6 +106,22 @@ int main(int argc, char *argv[])
 			case 'H':
 				generator.setShading(false);
 				break;
+			case 'a': {
+					istringstream iss;
+					iss.str(optarg);
+					int miny;
+					iss >> miny;
+					generator.setMinY(miny);
+				}
+				break;
+			case 'c': {
+					istringstream iss;
+					iss.str(optarg);
+					int maxy;
+					iss >> maxy;
+					generator.setMaxY(maxy);
+				}
+				break;
 			case 'g': {
 					istringstream geometry;
 					geometry.str(optarg);
@@ -112,13 +130,13 @@ int main(int argc, char *argv[])
 					geometry >> x >> c >> y >> w >> h;
 					if (geometry.fail() || c != ':' || w < 1 || h < 1) {
 						usage();
-						exit(-1);
+						exit(1);
 					}
 					generator.setGeometry(x, y, w, h);
 				}
 				break;
 			default:
-				abort();
+				exit(1);
 		}
 	}
 	try {

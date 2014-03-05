@@ -53,6 +53,15 @@ drawplayers:
 draworigin:
     Draw origin indicator, `--draworigin`
 
+noshading:
+    Don't draw shading on nodes, `--noshading`
+
+min-y:
+    Don't draw nodes below this y value, `--min-y -25`
+
+max-y:
+    Don't draw nodes above this y value, `--max-y 75`
+
 geometry:
     Limit area to specific geometry, `--geometry -800:-800+1600+1600`
 

@@ -77,6 +77,8 @@ public:
 	void setDrawScale(bool drawScale);
 	void setShading(bool shading);
 	void setGeometry(int x, int y, int w, int h);
+	void setMinY(int y);
+	void setMaxY(int y);
 	void parseColorsFile(const std::string &fileName);
 	void generate(const std::string &input, const std::string &output);
 
@@ -117,6 +119,8 @@ private:
 	int m_xMax;
 	int m_zMin;
 	int m_zMax;
+	int m_yMin;
+	int m_yMax;
 	int m_geomX;
 	int m_geomY;
 	int m_geomX2;

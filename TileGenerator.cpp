@@ -102,6 +102,8 @@ TileGenerator::TileGenerator():
 	m_xMax(INT_MIN),
 	m_zMin(INT_MAX),
 	m_zMax(INT_MIN),
+	m_yMin(-30000),
+	m_yMax(30000),
 	m_geomX(-50),
 	m_geomY(-50),
 	m_geomX2(50),
@@ -213,6 +215,16 @@ void TileGenerator::setGeometry(int x, int y, int w, int h)
 	}
 }
 
+void TileGenerator::setMinY(int y)
+{
+	m_yMin = y;
+}
+
+void TileGenerator::setMaxY(int y)
+{
+	m_yMax = y;
+}
+
 void TileGenerator::parseColorsFile(const std::string &fileName)
 {
 	ifstream in;
@@ -293,6 +305,12 @@ void TileGenerator::loadBlocks()
 				sqlite3_int64 blocknum = sqlite3_column_int64(statement, 0);
 				BlockPos pos = decodeBlockPos(blocknum);
 				if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
+					continue;
+				}
+				if (pos.y < m_yMin) {
+					continue;
+				}
+				if (pos.y > m_yMax) {
 					continue;
 				}
 				if (pos.x < m_xMin) {
@@ -479,7 +497,9 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 				continue;
 			}
 			int imageX = getImageX(xBegin + x);
-			for (int y = 15; y >= 0; --y) {
+			int minY = (pos.y * 16 > m_yMin) ? 0 : m_yMin - pos.y * 16;
+			int maxY = (pos.y * 16 < m_yMax) ? 15 : m_yMax - pos.y * 16;
+			for (int y = maxY; y >= minY; --y) {
 				int position = x + (y << 4) + (z << 8);
 				int content = readBlockContent(mapData, version, position);
 				if (content == m_blockIgnoreId || content == m_blockAirId) {
