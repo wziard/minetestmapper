@@ -14,3 +14,9 @@
 #endif
 
 #define BLOCK_SIZE 16
+
+#ifdef USE_CMAKE_CONFIG_H
+#include "cmake_config.h"
+#else
+#define USE_LEVELDB 0
+#endif

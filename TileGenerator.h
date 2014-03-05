@@ -15,10 +15,10 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sqlite3.h>
 #include <stdint.h>
 #include <string>
 #include "PixelAttributes.h"
+#include "db.h"
 
 struct Color {
 	Color(): r(255), g(255), b(255) {};
@@ -80,17 +80,18 @@ public:
 	void setMinY(int y);
 	void setMaxY(int y);
 	void parseColorsFile(const std::string &fileName);
+	void setBackend(std::string backend);
 	void generate(const std::string &input, const std::string &output);
 
 private:
 	void parseColorsStream(std::istream &in);
 	void openDb(const std::string &input);
 	void loadBlocks();
-	BlockPos decodeBlockPos(sqlite3_int64 blockId) const;
+	BlockPos decodeBlockPos(int64_t blockId) const;
 	void createImage();
 	void renderMap();
 	std::list<int> getZValueList() const;
-	std::map<int, BlockList> getBlocksOnZ(int zPos, sqlite3_stmt *statement) const;
+	std::map<int, BlockList> getBlocksOnZ(int zPos);
 	void renderMapBlock(const unsigned_string &mapBlock, const BlockPos &pos, int version);
 	void renderShading(int zPos);
 	void renderScale();
@@ -111,8 +112,9 @@ private:
 	bool m_drawScale;
 	bool m_shading;
 	int m_border;
+	std::string m_backend;
 
-	sqlite3 *m_db;
+	DB *m_db;
 	gdImagePtr m_image;
 	PixelAttributes m_blockPixelAttributes;
 	int m_xMin;

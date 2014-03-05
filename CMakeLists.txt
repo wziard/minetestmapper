@@ -28,6 +28,25 @@ else (LIBSQLITE3_INCLUDE_DIR)
 	message(FATAL_ERROR "Could not find sqlite3")
 endif (LIBSQLITE3_INCLUDE_DIR)
 
+set(USE_LEVELDB 0)
+
+OPTION(ENABLE_LEVELDB "Enable LevelDB backend")
+
+if(ENABLE_LEVELDB)
+	find_library(LEVELDB_LIBRARY leveldb)
+	find_path(LEVELDB_INCLUDE_DIR db.h PATH_SUFFIXES leveldb)
+	message (STATUS "LevelDB library: ${LEVELDB_LIBRARY}")
+	message (STATUS "LevelDB headers: ${LEVELDB_INCLUDE_DIR}")
+	if(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
+		set(USE_LEVELDB 1)
+		message(STATUS "LevelDB backend enabled")
+		include_directories(${LEVELDB_INCLUDE_DIR})
+	else(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
+		set(USE_LEVELDB 0)
+		message(STATUS "LevelDB not found!")
+	endif(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
+endif(ENABLE_LEVELDB)
+
 find_program(XXD_EXECUTABLE xxd)
 
 if (XXD_EXECUTABLE)
@@ -51,12 +70,11 @@ include_directories(
 	${LIBSQLITE3_INCLUDE_DIRS}
 )
 
-set(mapper_HDRS
-	PixelAttributes.h
-	PlayerAttributes.h
-	TileGenerator.h
-	ZlibDecompressor.h
+configure_file(
+	"${PROJECT_SOURCE_DIR}/cmake_config.h.in"
+	"${PROJECT_BINARY_DIR}/cmake_config.h"
 )
+add_definitions ( -DUSE_CMAKE_CONFIG_H )
 
 set(mapper_SRCS
 	PixelAttributes.cpp
@@ -64,16 +82,21 @@ set(mapper_SRCS
 	TileGenerator.cpp
 	ZlibDecompressor.cpp
 	mapper.cpp
+	db-sqlite3.cpp
 )
 
+if(USE_LEVELDB)
+	set(mapper_SRCS ${mapper_SRCS} db-leveldb.cpp)
+endif(USE_LEVELDB)
+
 add_executable(minetestmapper
-	${mapper_HDRS}
 	${mapper_SRCS}
 )
 
 target_link_libraries(
 	minetestmapper
 	${LIBSQLITE3_LIBRARIES}
+	${LEVELDB_LIBRARY}
 	gd
 	z
 )

@@ -19,10 +19,14 @@
 #include "TileGenerator.h"
 #include "ZlibDecompressor.h"
 #include "colors.h"
+#include "db-sqlite3.h"
+#if USE_LEVELDB
+#include "db-leveldb.h"
+#endif
 
 using namespace std;
 
-static inline sqlite3_int64 pythonmodulo(sqlite3_int64 i, sqlite3_int64 mod)
+static inline int64_t pythonmodulo(int64_t i, int64_t mod)
 {
 	if (i >= 0) {
 		return i % mod;
@@ -96,7 +100,7 @@ TileGenerator::TileGenerator():
 	m_drawScale(false),
 	m_shading(true),
 	m_border(0),
-	m_db(0),
+	m_backend("sqlite3"),
 	m_image(0),
 	m_xMin(INT_MAX),
 	m_xMax(INT_MIN),
@@ -116,10 +120,6 @@ TileGenerator::TileGenerator():
 
 TileGenerator::~TileGenerator()
 {
-	if (m_db != 0) {
-		sqlite3_close(m_db);
-		m_db = 0;
-	}
 }
 
 void TileGenerator::setBgColor(const std::string &bgColor)
@@ -235,6 +235,11 @@ void TileGenerator::parseColorsFile(const std::string &fileName)
 	parseColorsStream(in);
 }
 
+void TileGenerator::setBackend(std::string backend)
+{
+	m_backend = backend;
+}
+
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
 	string input_path = input;
@@ -287,59 +292,49 @@ void TileGenerator::parseColorsStream(std::istream &in)
 
 void TileGenerator::openDb(const std::string &input)
 {
-	string db_name = input + "map.sqlite";
-	if (sqlite3_open_v2(db_name.c_str(), &m_db, SQLITE_OPEN_READONLY | SQLITE_OPEN_PRIVATECACHE, 0) != SQLITE_OK) {
-		throw std::runtime_error(std::string(sqlite3_errmsg(m_db)) + ", Database file: " + db_name);
-	}
+	if(m_backend == "sqlite3")
+		m_db = new DBSQLite3(input);
+#if USE_LEVELDB
+	if(m_backend == "leveldb")
+		m_db = new DBLevelDB(input);
+#endif
+	else
+		throw std::runtime_error(((std::string) "Unknown map backend: ") + m_backend);
 }
 
 void TileGenerator::loadBlocks()
 {
-	sqlite3_stmt *statement;
-	string sql = "SELECT pos FROM blocks";
-	if (sqlite3_prepare_v2(m_db, sql.c_str(), sql.length(), &statement, 0) == SQLITE_OK) {
-		int result = 0;
-		while (true) {
-			result = sqlite3_step(statement);
-			if(result == SQLITE_ROW) {
-				sqlite3_int64 blocknum = sqlite3_column_int64(statement, 0);
-				BlockPos pos = decodeBlockPos(blocknum);
-				if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
-					continue;
-				}
-				if (pos.y < m_yMin) {
-					continue;
-				}
-				if (pos.y > m_yMax) {
-					continue;
-				}
-				if (pos.x < m_xMin) {
-					m_xMin = pos.x;
-				}
-				if (pos.x > m_xMax) {
-					m_xMax = pos.x;
-				}
-				if (pos.z < m_zMin) {
-					m_zMin = pos.z;
-				}
-				if (pos.z > m_zMax) {
-					m_zMax = pos.z;
-				}
-				m_positions.push_back(std::pair<int, int>(pos.x, pos.z));
-			}
-			else {
-				break;
-			}
+	std::vector<int64_t> vec = m_db->getBlockPos();
+	for(unsigned int i = 0; i < vec.size(); i++) {
+		BlockPos pos = decodeBlockPos(vec[i]);
+		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
+			continue;
 		}
+		if (pos.y < m_yMin) {
+			continue;
+		}
+		if (pos.y > m_yMax) {
+			continue;
+		}
+		if (pos.x < m_xMin) {
+			m_xMin = pos.x;
+		}
+		if (pos.x > m_xMax) {
+			m_xMax = pos.x;
+		}
+		if (pos.z < m_zMin) {
+			m_zMin = pos.z;
+		}
+		if (pos.z > m_zMax) {
+			m_zMax = pos.z;
+		}
+		m_positions.push_back(std::pair<int, int>(pos.x, pos.z));
 		m_positions.sort();
 		m_positions.unique();
 	}
-	else {
-		throw std::runtime_error("Failed to get list of MapBlocks");
-	}
 }
 
-inline BlockPos TileGenerator::decodeBlockPos(sqlite3_int64 blockId) const
+inline BlockPos TileGenerator::decodeBlockPos(int64_t blockId) const
 {
 	BlockPos pos;
 	pos.x = unsignedToSigned(pythonmodulo(blockId, 4096), 2048);
@@ -360,18 +355,27 @@ void TileGenerator::createImage()
 	gdImageFilledRectangle(m_image, 0, 0, m_mapWidth + m_border - 1, m_mapHeight + m_border -1, rgb2int(m_bgColor.r, m_bgColor.g, m_bgColor.b));
 }
 
+std::map<int, TileGenerator::BlockList> TileGenerator::getBlocksOnZ(int zPos)
+{
+	DBBlockList in = m_db->getBlocksOnZ(zPos);
+	std::map<int, BlockList> out;
+	for(DBBlockList::const_iterator it = in.begin(); it != in.end(); ++it) {
+		Block b = Block(decodeBlockPos(it->first), it->second);
+		if(out.find(b.first.x) == out.end()) {
+			BlockList bl;
+			out[b.first.x] = bl;
+		}
+		out[b.first.x].push_back(b);
+	}
+	return out;
+}
+
 void TileGenerator::renderMap()
 {
-	sqlite3_stmt *statement;
-	string sql = "SELECT pos, data FROM blocks WHERE (pos >= ? AND pos <= ?)";
-	if (sqlite3_prepare_v2(m_db, sql.c_str(), sql.length(), &statement, 0) != SQLITE_OK) {
-		throw std::runtime_error("Failed to get MapBlock");
-	}
-
 	std::list<int> zlist = getZValueList();
 	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
 		int zPos = *zPosition;
-		map<int, BlockList> blocks = getBlocksOnZ(zPos, statement);
+		std::map<int, BlockList> blocks = getBlocksOnZ(zPos);
 		for (std::list<std::pair<int, int> >::const_iterator position = m_positions.begin(); position != m_positions.end(); ++position) {
 			if (position->second != zPos) {
 				continue;
@@ -618,37 +622,6 @@ inline std::list<int> TileGenerator::getZValueList() const
 	zlist.unique();
 	zlist.reverse();
 	return zlist;
-}
-
-std::map<int, TileGenerator::BlockList> TileGenerator::getBlocksOnZ(int zPos, sqlite3_stmt *statement) const
-{
-	map<int, BlockList> blocks;
-
-	sqlite3_int64 psMin;
-	sqlite3_int64 psMax;
-
-	psMin = (static_cast<sqlite3_int64>(zPos) * 16777216l) - 0x800000;
-	psMax = (static_cast<sqlite3_int64>(zPos) * 16777216l) + 0x7fffff;
-	sqlite3_bind_int64(statement, 1, psMin);
-	sqlite3_bind_int64(statement, 2, psMax);
-
-	int result = 0;
-	while (true) {
-		result = sqlite3_step(statement);
-		if(result == SQLITE_ROW) {
-			sqlite3_int64 blocknum = sqlite3_column_int64(statement, 0);
-			const unsigned char *data = reinterpret_cast<const unsigned char *>(sqlite3_column_blob(statement, 1));
-			int size = sqlite3_column_bytes(statement, 1);
-			BlockPos pos = decodeBlockPos(blocknum);
-			blocks[pos.x].push_back(Block(pos, unsigned_string(data, size)));
-		}
-		else {
-			break;
-		}
-	}
-	sqlite3_reset(statement);
-
-	return blocks;
 }
 
 void TileGenerator::writeImage(const std::string &output)
