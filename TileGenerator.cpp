@@ -295,7 +295,7 @@ void TileGenerator::openDb(const std::string &input)
 	if(m_backend == "sqlite3")
 		m_db = new DBSQLite3(input);
 #if USE_LEVELDB
-	if(m_backend == "leveldb")
+	else if(m_backend == "leveldb")
 		m_db = new DBLevelDB(input);
 #endif
 	else
