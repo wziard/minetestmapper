@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <climits>
 #include <fstream>
 #include <gdfontmb.h>
 #include <iostream>
@@ -66,7 +67,9 @@ static inline int readBlockContent(const unsigned char *mapData, int version, in
 		}
 	}
 	else {
-		throw VersionError();
+		std::ostringstream oss;
+		oss << "Unsupported map version " << version;
+		throw std::runtime_error(oss.str());
 	}
 }
 
@@ -91,13 +94,14 @@ TileGenerator::TileGenerator():
 	m_drawOrigin(false),
 	m_drawPlayers(false),
 	m_drawScale(false),
+	m_shading(true),
 	m_border(0),
 	m_db(0),
 	m_image(0),
-	m_xMin(0),
-	m_xMax(0),
-	m_zMin(0),
-	m_zMax(0),
+	m_xMin(INT_MAX),
+	m_xMax(INT_MIN),
+	m_zMin(INT_MAX),
+	m_zMax(INT_MIN),
 	m_geomX(-50),
 	m_geomY(-50),
 	m_geomX2(50),
@@ -140,10 +144,10 @@ Color TileGenerator::parseColor(const std::string &color)
 {
 	Color parsed;
 	if (color.length() != 7) {
-		throw ColorError();
+		throw std::runtime_error("Color not 7 characters long");
 	}
 	if (color[0] != '#') {
-		throw ColorError();
+		throw std::runtime_error("Color does not begin with #");
 	}
 	long col = strtol(color.c_str() + 1, NULL, 16);
 	parsed.b = col % 256;
@@ -170,6 +174,11 @@ void TileGenerator::setDrawScale(bool drawScale)
 	if (m_drawScale) {
 		m_border = 40;
 	}
+}
+
+void TileGenerator::setShading(bool shading)
+{
+	m_shading = shading;
 }
 
 void TileGenerator::setGeometry(int x, int y, int w, int h)
@@ -268,8 +277,7 @@ void TileGenerator::openDb(const std::string &input)
 {
 	string db_name = input + "map.sqlite";
 	if (sqlite3_open_v2(db_name.c_str(), &m_db, SQLITE_OPEN_READONLY | SQLITE_OPEN_PRIVATECACHE, 0) != SQLITE_OK) {
-		std::cerr << sqlite3_errmsg(m_db) << ", Database file: " << db_name << std::endl;
-		throw DbError();
+		throw std::runtime_error(std::string(sqlite3_errmsg(m_db)) + ", Database file: " + db_name);
 	}
 }
 
@@ -309,7 +317,7 @@ void TileGenerator::loadBlocks()
 		m_positions.unique();
 	}
 	else {
-		throw DbError();
+		throw std::runtime_error("Failed to get list of MapBlocks");
 	}
 }
 
@@ -339,7 +347,7 @@ void TileGenerator::renderMap()
 	sqlite3_stmt *statement;
 	string sql = "SELECT pos, data FROM blocks WHERE (pos >= ? AND pos <= ?)";
 	if (sqlite3_prepare_v2(m_db, sql.c_str(), sql.length(), &statement, 0) != SQLITE_OK) {
-		throw DbError();
+		throw std::runtime_error("Failed to get MapBlock");
 	}
 
 	std::list<int> zlist = getZValueList();
@@ -454,7 +462,8 @@ void TileGenerator::renderMap()
 				}
 			}
 		}
-		renderShading(zPos);
+		if(m_shading)
+			renderShading(zPos);
 	}
 }
 

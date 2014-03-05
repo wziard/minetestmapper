@@ -29,6 +29,7 @@ void usage()
 			"  --drawscale\n"
 			"  --drawplayers\n"
 			"  --draworigin\n"
+			"  --noshading\n"
 			"  --geometry x:y+w+h\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
@@ -48,6 +49,7 @@ int main(int argc, char *argv[])
 		{"draworigin", no_argument, 0, 'R'},
 		{"drawplayers", no_argument, 0, 'P'},
 		{"drawscale", no_argument, 0, 'S'},
+		{"noshading", no_argument, 0, 'H'},
 		{"geometry", required_argument, 0, 'g'},
 	};
 
@@ -63,14 +65,14 @@ int main(int argc, char *argv[])
 		if (c == -1) {
 			if (input.empty() || output.empty()) {
 				usage();
-				exit(-1);
+				return -1;
 			}
 			break;
 		}
 		switch (c) {
 			case 'h':
 				usage();
-				exit(0);
+				return 0;
 				break;
 			case 'i':
 				input = optarg;
@@ -99,6 +101,9 @@ int main(int argc, char *argv[])
 			case 'S':
 				generator.setDrawScale(true);
 				break;
+			case 'H':
+				generator.setShading(false);
+				break;
 			case 'g': {
 					istringstream geometry;
 					geometry.str(optarg);
@@ -116,5 +121,11 @@ int main(int argc, char *argv[])
 				abort();
 		}
 	}
-	generator.generate(input, output);
+	try {
+		generator.generate(input, output);
+	} catch(std::runtime_error e) {
+		std::cout<<"Exception: "<<e.what()<<std::endl;
+		return 1;
+	}
+	return 0;
 }

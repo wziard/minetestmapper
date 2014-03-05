@@ -56,15 +56,6 @@ struct BlockPos {
 	}
 };
 
-class DbError {
-};
-
-class ColorError {
-};
-
-class VersionError {
-};
-
 
 class TileGenerator
 {
@@ -84,6 +75,7 @@ public:
 	void setDrawOrigin(bool drawOrigin);
 	void setDrawPlayers(bool drawPlayers);
 	void setDrawScale(bool drawScale);
+	void setShading(bool shading);
 	void setGeometry(int x, int y, int w, int h);
 	void parseColorsFile(const std::string &fileName);
 	void generate(const std::string &input, const std::string &output);
@@ -115,6 +107,7 @@ private:
 	bool m_drawOrigin;
 	bool m_drawPlayers;
 	bool m_drawScale;
+	bool m_shading;
 	int m_border;
 
 	sqlite3 *m_db;
