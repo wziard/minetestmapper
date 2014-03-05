@@ -3,10 +3,8 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0003 NEW)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS_RELEASE "-std=c++0x -Wall -DNDEBUG")
-	set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -std=c++0x -Wall -Wextra -DDEBUG")
-endif(CMAKE_COMPILER_IS_GNUCXX)
+set(CMAKE_CXX_FLAGS_RELEASE "-std=c++0x -Wall -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -std=c++0x -Wall -Wextra -DDEBUG")
 
 
 find_package(PkgConfig)
@@ -35,7 +33,7 @@ find_program(XXD_EXECUTABLE xxd)
 if (XXD_EXECUTABLE)
 	message(STATUS "Found xxd")
 else (XXD_EXECUTABLE)
-	message(FATAL_ERROR "Executable xxd not found")
+	message(FATAL_ERROR "xxd not found")
 endif (XXD_EXECUTABLE)
 
 add_custom_command(
