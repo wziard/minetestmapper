@@ -1,5 +1,6 @@
 #include "db-sqlite3.h"
 #include <stdexcept>
+#include <unistd.h> // for usleep
 
 DBSQLite3::DBSQLite3(const std::string &mapdir) {
 	
@@ -24,7 +25,8 @@ std::vector<int64_t> DBSQLite3::getBlockPos() {
 			if(result == SQLITE_ROW) {
 				sqlite3_int64 blocknum = sqlite3_column_int64(statement, 0);
 				vec.push_back(blocknum);
-			}
+			} else if (result == SQLITE_BUSY) // Wait some time and try again
+				usleep(10000);
 			else
 				break;
 		}
@@ -59,8 +61,9 @@ DBBlockList DBSQLite3::getBlocksOnZ(int zPos)
 			const unsigned char *data = reinterpret_cast<const unsigned char *>(sqlite3_column_blob(statement, 1));
 			int size = sqlite3_column_bytes(statement, 1);
 			blocks.push_back(DBBlock(blocknum, std::basic_string<unsigned char>(data, size)));
-		}
-		else {
+		} else if (result == SQLITE_BUSY) { // Wait some time and try again
+			usleep(10000);
+		} else {
 			break;
 		}
 	}
