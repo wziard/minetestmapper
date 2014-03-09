@@ -11,7 +11,7 @@ DBSQLite3::DBSQLite3(const std::string &mapdir) {
 }
 
 DBSQLite3::~DBSQLite3() {
-	sqlite3_close_v2(m_db);
+	sqlite3_close(m_db);
 }
 
 std::vector<int64_t> DBSQLite3::getBlockPos() {

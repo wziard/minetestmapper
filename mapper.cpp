@@ -13,6 +13,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include "TileGenerator.h"
 
 using namespace std;

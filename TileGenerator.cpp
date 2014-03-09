@@ -14,6 +14,7 @@
 #include <gdfontmb.h>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include "config.h"
 #include "PlayerAttributes.h"
 #include "TileGenerator.h"

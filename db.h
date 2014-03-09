@@ -1,12 +1,14 @@
 #ifndef _DB_H
 #define _DB_H
 
-#include <cstdint>
+#include <stdint.h>
 #include <vector>
 #include <list>
 #include <string>
+#include <utility>
 
-typedef std::pair<int64_t, std::basic_string<unsigned char>> DBBlock;
+// we cannot use ... char>> here because mingw-gcc is f**king retarded (caring about whitespace and shit)
+typedef std::pair<int64_t, std::basic_string<unsigned char> > DBBlock;
 typedef std::list<DBBlock> DBBlockList;
 
 class DB {
