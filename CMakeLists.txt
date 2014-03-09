@@ -15,6 +15,15 @@ if(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
 	message(FATAL_ERROR "libgd not found!")
 endif(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
 
+# Find zlib
+find_library(ZLIB_LIBRARY z)
+find_path(ZLIB_INCLUDE_DIR zlib.h)
+message (STATUS "zlib library: ${ZLIB_LIBRARY}")
+message (STATUS "zlib headers: ${ZLIB_INCLUDE_DIR}")
+if(NOT ZLIB_LIBRARY OR NOT ZLIB_INCLUDE_DIR)
+	message(FATAL_ERROR "zlib not found!")
+endif(NOT ZLIB_LIBRARY OR NOT ZLIB_INCLUDE_DIR)
+
 find_package(PkgConfig)
 include(FindPackageHandleStandardArgs)
 
@@ -77,6 +86,7 @@ include_directories(
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	${LIBSQLITE3_INCLUDE_DIRS}
 	${LIBGD_INCLUDE_DIR}
+	${ZLIB_INCLUDE_DIR}
 )
 
 configure_file(
@@ -107,5 +117,5 @@ target_link_libraries(
 	${LIBSQLITE3_LIBRARIES}
 	${LEVELDB_LIBRARY}
 	${LIBGD_LIBRARY}
-	z
+	${ZLIB_LIBRARY}
 )
