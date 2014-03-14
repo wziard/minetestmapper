@@ -8,7 +8,7 @@ Requirements
 
 * libgd
 * sqlite3
-* xxd binary
+* xxd binary (You can get xxd from your distribution packages or use '' wget -O xxd.c http://www.opensource.apple.com/source/vim/vim-43/vim/src/xxd/xxd.c?txt && gcc xxd.c -o xxd '')
 
 Compilation
 -----------
