@@ -1,0 +1,100 @@
+==FILE== mods/dumpnodes/init.lua
+local function nd_get_tiles(nd)
+	if nd.tiles then
+		return nd.tiles
+	elseif nd.tile_images then
+		return nd.tile_images
+	end
+	return nil
+end
+
+minetest.register_chatcommand("dumpnodes", {
+	params = "",
+	description = "",
+	func = function(plname, param)
+		local n = 0
+		local ntbl = {}
+		for nn, nd in pairs(minetest.registered_nodes) do
+			local prefix, name = nn:match('(.*):(.*)')
+			if prefix == nil or name == nil or prefix == '' or name == '' then
+				-- nothing
+			else
+				if ntbl[prefix] == nil then
+					ntbl[prefix] = {}
+				end
+				ntbl[prefix][name] = nd
+			end
+		end
+		local out, err = io.open('nodes.txt', 'wb')
+		if not out then
+			return minetest.chat_send_player(plname, 'io.open: ' .. err)
+		end
+		for prefix, i in pairs(ntbl) do
+			out:write('# ' .. prefix .. '\n')
+			for name, nd in pairs(i) do
+				if nd.drawtype ~= 'airlike' and nd_get_tiles(nd) ~= nil then
+					local tl = nd_get_tiles(nd)[1]
+					if type(tl) == 'table' then
+						tl = tl.name
+					end
+					tl = (tl .. '^'):match('(.-)^')
+					out:write(prefix .. ':' .. name .. ' ' .. tl .. '\n')
+					n = n + 1
+				end
+			end
+			out:write('\n')
+		end
+		out:close()
+		minetest.chat_send_player(plname, n .. " nodes dumped.")
+	end,
+})
+==FILE== avgcolor.py
+#!/usr/bin/env python
+import sys
+from PIL import Image
+
+def avg2(a, b):
+	return int((a + b) / 2.0)
+
+def avg2t3i0(a, b):
+	return tuple(avg2(t[0], t[1]) for t in zip(a[:3], b[:3]))
+
+if len(sys.argv) <= 1:
+	print("Usage: %s <input>" % sys.argv[0])
+else:
+	inp = Image.open(sys.argv[1])
+	inp = inp.convert('RGBA')
+	ind = inp.load()
+	avgc = -1
+	for x in range(inp.size[0]):
+		for y in range(inp.size[1]):
+			pxl = ind[x, y]
+			if pxl[3] < 128:
+				continue
+			if avgc == -1:
+				avgc = pxl[:3]
+			else:
+				avgc = avg2t3i0(avgc, pxl)
+	if avgc == -1:
+		sys.stderr.write('Warning: did not find average color\n')
+		print('0 0 0')
+	else:
+		print("%d %d %d" % avgc)
+
+==COMMAND==
+while read -r p; do
+	set -- junk $p
+	shift
+	if [[ ! $1 == "#" && ! $1 == "" ]]; then
+		echo $1 `python /path/to/avgcolor.py $(find /minetest/dir -type f -name $2)`
+	fi
+done < nodes.txt > colors.txt
+# Use nicer colors for water and lava
+sed -re 's/^default:water_([a-z]+) [0-9 ]+$/default:water_\1 39 66 106/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
+sed -re 's/^default:lava_([a-z]+) [0-9 ]+$/default:lava_\1 255 100 0/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
+==INSTRUCTIONS==
+1) Get avgcolors.py running
+2) Add the dumpnodes mod to Minetest
+3) Create a world and load dumpnodes & all mods you want to have a color entry for
+4) Execute /dumpnodes ingame
+5) Use the command to generate colors.txt
