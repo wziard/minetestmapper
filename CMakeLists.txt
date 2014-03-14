@@ -69,7 +69,7 @@ endif (XXD_EXECUTABLE)
 add_custom_command(
 	OUTPUT colors.h
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/colors.txt colors.txt
-	COMMAND xxd -i colors.txt colors.h
+	COMMAND ${XXD_EXECUTABLE} -i colors.txt colors.h
 	DEPENDS colors.txt
 )
 set_property(SOURCE TileGenerator.cpp APPEND PROPERTY OBJECT_DEPENDS colors.h)
