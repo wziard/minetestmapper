@@ -109,10 +109,10 @@ TileGenerator::TileGenerator():
 	m_zMax(INT_MIN),
 	m_yMin(-30000),
 	m_yMax(30000),
-	m_geomX(-50),
-	m_geomY(-50),
-	m_geomX2(50),
-	m_geomY2(50)
+	m_geomX(INT_MIN),
+	m_geomY(INT_MIN),
+	m_geomX2(INT_MAX),
+	m_geomY2(INT_MAX)
 {
 	string colors_txt_data(reinterpret_cast<char *>(colors_txt), colors_txt_len);
 	istringstream colors_stream(colors_txt_data);
