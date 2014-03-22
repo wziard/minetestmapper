@@ -330,9 +330,9 @@ void TileGenerator::loadBlocks()
 			m_zMax = pos.z;
 		}
 		m_positions.push_back(std::pair<int, int>(pos.x, pos.z));
-		m_positions.sort();
-		m_positions.unique();
 	}
+	m_positions.sort();
+	m_positions.unique();
 }
 
 inline BlockPos TileGenerator::decodeBlockPos(int64_t blockId) const
