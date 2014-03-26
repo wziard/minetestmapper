@@ -311,10 +311,10 @@ void TileGenerator::loadBlocks()
 		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
 			continue;
 		}
-		if (pos.y < m_yMin) {
+		if (pos.y < m_yMin * 16) {
 			continue;
 		}
-		if (pos.y > m_yMax) {
+		if (pos.y > m_yMax * 16) {
 			continue;
 		}
 		if (pos.x < m_xMin) {
@@ -495,6 +495,8 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
 	const unsigned char *mapData = mapBlock.c_str();
+	int minY = (pos.y * 16 > m_yMin) ? 0 : m_yMin - pos.y * 16;
+	int maxY = (pos.y * 16 < m_yMax) ? 15 : m_yMax - pos.y * 16;
 	for (int z = 0; z < 16; ++z) {
 		int imageY = getImageY(zBegin + 15 - z);
 		for (int x = 0; x < 16; ++x) {
@@ -502,8 +504,7 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 				continue;
 			}
 			int imageX = getImageX(xBegin + x);
-			int minY = (pos.y * 16 > m_yMin) ? 0 : m_yMin - pos.y * 16;
-			int maxY = (pos.y * 16 < m_yMax) ? 15 : m_yMax - pos.y * 16;
+
 			for (int y = maxY; y >= minY; --y) {
 				int position = x + (y << 4) + (z << 8);
 				int content = readBlockContent(mapData, version, position);
