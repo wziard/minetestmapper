@@ -56,24 +56,6 @@ if(ENABLE_LEVELDB)
 	endif(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
 endif(ENABLE_LEVELDB)
 
-# Find xxd
-find_program(XXD_EXECUTABLE xxd)
-
-if (XXD_EXECUTABLE)
-	message(STATUS "Found xxd")
-else (XXD_EXECUTABLE)
-	message(FATAL_ERROR "xxd not found")
-endif (XXD_EXECUTABLE)
-
-# Add command to turn colors.txt into a C header file
-add_custom_command(
-	OUTPUT colors.h
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/colors.txt colors.txt
-	COMMAND ${XXD_EXECUTABLE} -i colors.txt colors.h
-	DEPENDS colors.txt
-)
-set_property(SOURCE TileGenerator.cpp APPEND PROPERTY OBJECT_DEPENDS colors.h)
-
 include_directories(
 	"${PROJECT_BINARY_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}"

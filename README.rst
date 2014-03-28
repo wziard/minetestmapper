@@ -8,7 +8,6 @@ Requirements
 
 * libgd
 * sqlite3
-* xxd binary (You can get xxd from your distribution packages or use '' wget -O xxd.c http://www.opensource.apple.com/source/vim/vim-43/vim/src/xxd/xxd.c?txt && gcc xxd.c -o xxd '')
 
 Compilation
 -----------
@@ -68,8 +67,3 @@ backend:
 geometry:
     Limit area to specific geometry, `--geometry -800:-800+1600+1600`
 
-Customization of colors.txt
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Default `colors.txt` is included in binary. Color definitions can be redefined
-using external `colors.txt` file.
