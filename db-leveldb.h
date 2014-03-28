@@ -3,7 +3,6 @@
 
 #include "db.h"
 #include <leveldb/db.h>
-#include <set>
 
 class DBLevelDB : public DB {
 public:
@@ -12,8 +11,12 @@ public:
 	virtual DBBlockList getBlocksOnZ(int zPos);
 	~DBLevelDB();
 private:
-	leveldb::DB *m_db;
-	std::set<int64_t> m_bpcache;
+	void loadPosCache();
+
+	leveldb::DB *db;
+
+	bool posCacheLoaded;
+	std::vector<int64_t> posCache;
 };
 
 #endif // _DB_LEVELDB_H

@@ -11,7 +11,7 @@ public:
 	virtual DBBlockList getBlocksOnZ(int zPos);
 	~DBSQLite3();
 private:
-	sqlite3 *m_db;
+	sqlite3 *db;
 
 	sqlite3_stmt *stmt_get_block_pos;
 	sqlite3_stmt *stmt_get_blocks;

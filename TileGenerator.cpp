@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
+#include <vector>
 #include "config.h"
 #include "PlayerAttributes.h"
 #include "TileGenerator.h"
@@ -308,17 +309,17 @@ void TileGenerator::openDb(const std::string &input)
 void TileGenerator::loadBlocks()
 {
 	std::vector<int64_t> vec = m_db->getBlockPos();
-	for(unsigned int i = 0; i < vec.size(); i++) {
-		BlockPos pos = decodeBlockPos(vec[i]);
+	for(std::vector<int64_t>::iterator it = vec.begin(); it != vec.end(); ++it) {
+		BlockPos pos = decodeBlockPos(*it);
+		// Check that it's in geometry (from --geometry option)
 		if (pos.x < m_geomX || pos.x > m_geomX2 || pos.z < m_geomY || pos.z > m_geomY2) {
 			continue;
 		}
-		if (pos.y < m_yMin * 16) {
+		// Check that it's between --miny and --maxy
+		if (pos.y < m_yMin * 16 || pos.y > m_yMax * 16) {
 			continue;
 		}
-		if (pos.y > m_yMax * 16) {
-			continue;
-		}
+		// Adjust minimum and maximum positions to the nearest block
 		if (pos.x < m_xMin) {
 			m_xMin = pos.x;
 		}
