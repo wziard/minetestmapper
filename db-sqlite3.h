@@ -12,6 +12,9 @@ public:
 	~DBSQLite3();
 private:
 	sqlite3 *m_db;
+
+	sqlite3_stmt *stmt_get_block_pos;
+	sqlite3_stmt *stmt_get_blocks;
 };
 
 #endif // _DB_SQLITE3_H
