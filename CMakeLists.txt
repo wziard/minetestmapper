@@ -1,7 +1,11 @@
-project(MinetestMapper C CXX)
+project(minetesmapper CXX)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0003 NEW)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 0)
+set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++0x -Wall -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -std=c++0x -Wall -Wextra -DDEBUG")
@@ -96,3 +100,29 @@ target_link_libraries(
 	${ZLIB_LIBRARY}
 	stdc++ # clang seems to need this
 )
+
+install(FILES "AUTHORS" DESTINATION ".")
+install(FILES "COPYING" DESTINATION ".")
+install(FILES "README.rst" DESTINATION ".")
+install(FILES "colors.txt" DESTINATION ".")
+
+# CPack
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Overview mapper for Minetest")
+set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
+set(CPACK_PACKAGE_VENDOR "celeron55")
+set(CPACK_PACKAGE_CONTACT "Perttu Ahola <celeron55@gmail.com>")
+
+if(WIN32)
+	install(FILES "${PROJECT_BINARY_DIR}/minetestmapper.exe" DESTINATION ".")
+	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-win32")
+	set(CPACK_GENERATOR ZIP)
+else()
+	install(FILES "${PROJECT_BINARY_DIR}/minetestmapper" DESTINATION ".")
+	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-linux")
+	set(CPACK_GENERATOR TGZ)
+	set(CPACK_SOURCE_GENERATOR TGZ)
+endif()
+
+include(CPack)
