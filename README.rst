@@ -8,6 +8,7 @@ Requirements
 
 * libgd
 * sqlite3
+* leveldb (optional, set ENABLE_LEVELDB=1 in CMake to enable leveldb support)
 
 Compilation
 -----------
