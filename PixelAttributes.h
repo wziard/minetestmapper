@@ -11,11 +11,13 @@
 #define PIXELATTRIBUTES_H_ADZ35GYF
 
 #include <limits>
+#include <stdint.h>
 #include "config.h"
 
 struct PixelAttribute {
-	PixelAttribute(): height(std::numeric_limits<int>::min()) {};
+	PixelAttribute(): height(std::numeric_limits<int>::min()), thicken(0) {};
 	int height;
+	uint8_t thicken;
 	inline bool valid_height() {
 		return height != std::numeric_limits<int>::min();
 	}

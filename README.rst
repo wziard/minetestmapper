@@ -53,6 +53,9 @@ drawplayers:
 draworigin:
     Draw origin indicator, `--draworigin`
 
+drawalpha:
+    Allow blocks to be drawn with transparency, `--drawalpha`
+
 noshading:
     Don't draw shading on nodes, `--noshading`
 

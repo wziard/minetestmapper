@@ -21,12 +21,26 @@
 #include "db.h"
 
 struct Color {
-	Color(): r(255), g(255), b(255) {};
-	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b) {};
+	Color(): r(0xFF), g(0xFF), b(0xFF), a(0) {};
+	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b), a(0xFF) {};
+	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a): r(r), g(g), b(b), a(a) {};
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
+	uint8_t a;
 };
+
+struct ColorEntry {
+    ColorEntry(): r(0), g(0), b(0), a(0), t(0) {};
+	ColorEntry(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t t): r(r), g(g), b(b), a(a), t(t) {};
+	inline Color to_color() const { return Color(r, g, b, a); }
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+	uint8_t t;
+};
+
 
 struct BlockPos {
 	int x;
@@ -61,7 +75,7 @@ class TileGenerator
 {
 private:
 	typedef std::basic_string<unsigned char> unsigned_string;
-	typedef std::map<std::string, Color> ColorMap;
+	typedef std::map<std::string, ColorEntry> ColorMap;
 	typedef std::pair<BlockPos, unsigned_string> Block;
 	typedef std::list<Block> BlockList;
 
@@ -75,6 +89,7 @@ public:
 	void setDrawOrigin(bool drawOrigin);
 	void setDrawPlayers(bool drawPlayers);
 	void setDrawScale(bool drawScale);
+	void setDrawAlpha(bool drawAlpha);
 	void setShading(bool shading);
 	void setGeometry(int x, int y, int w, int h);
 	void setMinY(int y);
@@ -110,6 +125,7 @@ private:
 	bool m_drawOrigin;
 	bool m_drawPlayers;
 	bool m_drawScale;
+	bool m_drawAlpha;
 	bool m_shading;
 	int m_border;
 	std::string m_backend;

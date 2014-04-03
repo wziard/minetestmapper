@@ -1466,15 +1466,15 @@ mesecons_lightstone:lightstone_yellow_off 222 220 72
 mesecons_walllever:wall_lever_on 136 136 136
 mesecons_walllever:wall_lever_off 136 136 136
 bones:bones 74 74 74
-default:glass 192 192 227
-default:water_flowing 39 66 106
+default:glass 192 192 227 64 16
+default:water_flowing 39 66 106 128 224
 default:junglesapling 37 34 14
 default:sandstonebrick 160 144 108
 default:furnace_active 97 93 91
 default:sign_wall 163 141 106
 default:lava_source 255 100 0
 default:goldblock 126 116 35
-default:obsidian_glass 16 17 17
+default:obsidian_glass 16 17 17 64 16
 default:stone_with_copper 91 88 87
 default:grass_1 72 109 32
 default:papyrus 98 173 32
@@ -1505,7 +1505,7 @@ default:desert_stone 122 74 57
 default:tree 66 52 35
 default:jungletree 120 106 78
 default:cactus 132 143 108
-default:water_source 39 66 106
+default:water_source 39 66 106 128 224
 default:mese 200 202 0
 default:stone_with_coal 91 88 87
 default:nyancat 38 16 66
