@@ -306,13 +306,13 @@ void TileGenerator::parseColorsStream(std::istream &in)
 		in >> g;
 		in >> b;
 		if(in.peek() != '\n') {
-		    in >> a;
-		    if(in.peek() != '\n')
-                in >> t;
-            else
-                t = 0;
+			in >> a;
+			if(in.peek() != '\n')
+				in >> t;
+			else
+				t = 0;
 		} else
-		    a = 0xFF;
+			a = 0xFF;
 		if (in.good()) {
 			color = ColorEntry(r,g,b,a,t);
 			m_colors[name] = color;
@@ -536,8 +536,8 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 			}
 			int imageX = getImageX(xBegin + x);
 			if(m_drawAlpha) {
-			    col = Color(0,0,0,0);
-			    th = 0;
+				col = Color(0,0,0,0);
+				th = 0;
 			}
 
 			for (int y = maxY; y >= minY; --y) {
@@ -548,25 +548,25 @@ inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const
 				}
 				std::map<int, std::string>::iterator blockName = m_nameMap.find(content);
 				if (blockName == m_nameMap.end())
-				    continue;
+					continue;
 				const string &name = blockName->second;
 				ColorMap::const_iterator color = m_colors.find(name);
 				if (color != m_colors.end()) {
 					const Color c = color->second.to_color();
 					if (m_drawAlpha) {
-					    if (col.a == 0)
-					        col = c;
-					    else
-					        col = mixColors(col, c);
-					    if(col.a == 0xFF) {
-					        m_image->tpixels[imageY][imageX] = color2int(col);
-					        m_blockPixelAttributes.attribute(15 - z, xBegin + x).thicken = th;
-					    } else {
-					        th = (th + color->second.t) / 2.0;
-					        continue;
-					    }
+						if (col.a == 0)
+							col = c;
+						else
+							col = mixColors(col, c);
+						if(col.a == 0xFF) {
+							m_image->tpixels[imageY][imageX] = color2int(col);
+							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thicken = th;
+						} else {
+							th = (th + color->second.t) / 2.0;
+							continue;
+						}
 					} else
-					    m_image->tpixels[imageY][imageX] = color2int(c);
+						m_image->tpixels[imageY][imageX] = color2int(c);
 					m_readedPixels[z] |= (1 << x);
 					m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
 				} else {
@@ -600,7 +600,7 @@ inline void TileGenerator::renderShading(int zPos)
 				d = 36;
 			}
 			if (m_drawAlpha)
-			    d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thicken) / 255.0);
+				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thicken) / 255.0);
 			int sourceColor = m_image->tpixels[imageY][getImageX(x)] & 0xffffff;
 			uint8_t r = (sourceColor & 0xff0000) >> 16;
 			uint8_t g = (sourceColor & 0x00ff00) >> 8;
