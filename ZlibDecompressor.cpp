@@ -32,12 +32,12 @@ std::size_t ZlibDecompressor::seekPos() const
 	return m_seekPos;
 }
 
-ZlibDecompressor::string ZlibDecompressor::decompress()
+ustring ZlibDecompressor::decompress()
 {
 	const unsigned char *data = m_data + m_seekPos;
 	const std::size_t size = m_size - m_seekPos;
 
-	string buffer;
+	ustring buffer;
 	const size_t BUFSIZE = 128 * 1024;
 	uint8_t temp_buffer[BUFSIZE];
 
@@ -58,7 +58,7 @@ ZlibDecompressor::string ZlibDecompressor::decompress()
 		strm.avail_out = BUFSIZE;
 		strm.next_out = temp_buffer;
 		ret = inflate(&strm, Z_NO_FLUSH);
-		buffer += string(reinterpret_cast<unsigned char *>(temp_buffer), BUFSIZE - strm.avail_out);
+		buffer += ustring(reinterpret_cast<unsigned char *>(temp_buffer), BUFSIZE - strm.avail_out);
 	} while (ret == Z_OK);
 	if (ret != Z_STREAM_END) {
 		throw DecompressError();

@@ -1,74 +1,74 @@
-#include "db-leveldb.h"
 #include <stdexcept>
 #include <sstream>
+#include "db-leveldb.h"
+#include "types.h"
 
-inline int64_t stoi64(const std::string &s) {
+static inline int64_t stoi64(const std::string &s)
+{
 	std::stringstream tmp(s);
-	long long t;
+	int64_t t;
 	tmp >> t;
 	return t;
 }
 
-inline std::string i64tos(int64_t i) {
-	std::ostringstream o;
-	o<<i;
-	return o.str();
+
+static inline std::string i64tos(int64_t i)
+{
+	std::ostringstream os;
+	os << i;
+	return os.str();
 }
 
-DBLevelDB::DBLevelDB(const std::string &mapdir) {
+DBLevelDB::DBLevelDB(const std::string &mapdir)
+{
 	leveldb::Options options;
-	posCacheLoaded = false;
 	options.create_if_missing = false;
 	leveldb::Status status = leveldb::DB::Open(options, mapdir + "map.db", &db);
-	if(!status.ok())
+	if (!status.ok()) {
 		throw std::runtime_error("Failed to open Database");
+	}
+
+	loadPosCache();
 }
 
-DBLevelDB::~DBLevelDB() {
+
+DBLevelDB::~DBLevelDB()
+{
 	delete db;
 }
 
-std::vector<int64_t> DBLevelDB::getBlockPos() {
-	loadPosCache();
+
+std::vector<BlockPos> DBLevelDB::getBlockPos()
+{
 	return posCache;
 }
 
-void DBLevelDB::loadPosCache() {
-	if (posCacheLoaded) {
-		return;
-	}
 
+void DBLevelDB::loadPosCache()
+{
 	leveldb::Iterator * it = db->NewIterator(leveldb::ReadOptions());
 	for (it->SeekToFirst(); it->Valid(); it->Next()) {
-		posCache.push_back(stoi64(it->key().ToString()));
+		int64_t posHash = stoi64(it->key().ToString());
+		posCache.push_back(decodeBlockPos(posHash));
 	}
 	delete it;
-	posCacheLoaded = true;
 }
 
-DBBlockList DBLevelDB::getBlocksOnZ(int zPos) {
-	DBBlockList blocks;
+
+void DBLevelDB::getBlocksOnZ(std::map<int16_t, BlockList> &blocks, int16_t zPos)
+{
 	std::string datastr;
 	leveldb::Status status;
 
-	int64_t psMin = (zPos * 16777216L) - 0x800000;
-	int64_t psMax = (zPos * 16777216L) + 0x7fffff;
-
-	for (std::vector<int64_t>::iterator it = posCache.begin(); it != posCache.end(); ++it) {
-		int64_t i = *it;
-		if (i < psMin || i > psMax) {
+	for (std::vector<BlockPos>::iterator it = posCache.begin(); it != posCache.end(); ++it) {
+		if (it->z != zPos) {
 			continue;
 		}
-		status = db->Get(leveldb::ReadOptions(), i64tos(i), &datastr);
+		status = db->Get(leveldb::ReadOptions(), i64tos(encodeBlockPos(*it)), &datastr);
 		if (status.ok()) {
-			blocks.push_back(
-				DBBlock(i,
-					std::basic_string<unsigned char>((const unsigned char*) datastr.data(), datastr.size())
-				)
-			);
+			Block b(*it, ustring((const unsigned char *) datastr.data(), datastr.size()));
+			blocks[b.first.x].push_back(b);
 		}
 	}
-
-	return blocks;
 }
 

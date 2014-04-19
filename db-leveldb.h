@@ -1,5 +1,5 @@
-#ifndef _DB_LEVELDB_H
-#define _DB_LEVELDB_H
+#ifndef DB_LEVELDB_HEADER
+#define DB_LEVELDB_HEADER
 
 #include "db.h"
 #include <leveldb/db.h>
@@ -7,16 +7,15 @@
 class DBLevelDB : public DB {
 public:
 	DBLevelDB(const std::string &mapdir);
-	virtual std::vector<int64_t> getBlockPos();
-	virtual DBBlockList getBlocksOnZ(int zPos);
+	virtual std::vector<BlockPos> getBlockPos();
+	virtual void getBlocksOnZ(std::map<int16_t, BlockList> &blocks, int16_t zPos);
 	~DBLevelDB();
 private:
 	void loadPosCache();
 
-	leveldb::DB *db;
+	std::vector<BlockPos> posCache;
 
-	bool posCacheLoaded;
-	std::vector<int64_t> posCache;
+	leveldb::DB *db;
 };
 
-#endif // _DB_LEVELDB_H
+#endif // DB_LEVELDB_HEADER

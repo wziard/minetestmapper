@@ -1,14 +1,5 @@
-/*
- * =====================================================================
- *        Version:  1.0
- *        Created:  23.08.2012 12:35:59
- *         Author:  Miroslav Bendík
- *        Company:  LinuxOS.sk
- * =====================================================================
- */
-
-#ifndef TILEGENERATOR_H_JJNUCARH
-#define TILEGENERATOR_H_JJNUCARH
+#ifndef TILEGENERATOR_HEADER
+#define TILEGENERATOR_HEADER
 
 #include <gd.h>
 #include <iosfwd>
@@ -19,6 +10,7 @@
 #include <string>
 #include "PixelAttributes.h"
 #include "db.h"
+#include "types.h"
 
 struct Color {
 	Color(): r(0xFF), g(0xFF), b(0xFF), a(0) {};
@@ -42,42 +34,10 @@ struct ColorEntry {
 };
 
 
-struct BlockPos {
-	int x;
-	int y;
-	int z;
-	bool operator<(const BlockPos& p) const
-	{
-		if (z > p.z) {
-			return true;
-		}
-		if (z < p.z) {
-			return false;
-		}
-		if (y > p.y) {
-			return true;
-		}
-		if (y < p.y) {
-			return false;
-		}
-		if (x > p.x) {
-			return true;
-		}
-		if (x < p.x) {
-			return false;
-		}
-		return false;
-	}
-};
-
-
 class TileGenerator
 {
 private:
-	typedef std::basic_string<unsigned char> unsigned_string;
 	typedef std::map<std::string, ColorEntry> ColorMap;
-	typedef std::pair<BlockPos, unsigned_string> Block;
-	typedef std::list<Block> BlockList;
 
 public:
 	TileGenerator();
@@ -102,12 +62,10 @@ private:
 	void parseColorsStream(std::istream &in);
 	void openDb(const std::string &input);
 	void loadBlocks();
-	BlockPos decodeBlockPos(int64_t blockId) const;
 	void createImage();
 	void renderMap();
 	std::list<int> getZValueList() const;
-	std::map<int, BlockList> getBlocksOnZ(int zPos);
-	void renderMapBlock(const unsigned_string &mapBlock, const BlockPos &pos, int version);
+	void renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version);
 	void renderShading(int zPos);
 	void renderScale();
 	void renderOrigin();
@@ -153,7 +111,7 @@ private:
 
 	int m_blockAirId;
 	int m_blockIgnoreId;
-}; /* -----  end of class TileGenerator  ----- */
+}; // class TileGenerator
 
-#endif /* end of include guard: TILEGENERATOR_H_JJNUCARH */
+#endif // TILEGENERATOR_HEADER
 

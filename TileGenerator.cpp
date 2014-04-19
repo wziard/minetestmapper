@@ -1,12 +1,3 @@
-/*
- * =====================================================================
- *        Version:  1.0
- *        Created:  23.08.2012 12:35:53
- *         Author:  Miroslav Bendík
- *        Company:  LinuxOS.sk
- * =====================================================================
- */
-
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
@@ -28,26 +19,6 @@
 #endif
 
 using namespace std;
-
-static inline int64_t pythonmodulo(int64_t i, int64_t mod)
-{
-	if (i >= 0) {
-		return i % mod;
-	}
-	else {
-		return mod - ((-i) % mod);
-	}
-}
-
-static inline int unsignedToSigned(long i, long max_positive)
-{
-	if (i < max_positive) {
-		return i;
-	}
-	else {
-		return i - 2l * max_positive;
-	}
-}
 
 static inline uint16_t readU16(const unsigned char *data)
 {
@@ -334,9 +305,9 @@ void TileGenerator::openDb(const std::string &input)
 
 void TileGenerator::loadBlocks()
 {
-	std::vector<int64_t> vec = m_db->getBlockPos();
-	for(std::vector<int64_t>::iterator it = vec.begin(); it != vec.end(); ++it) {
-		BlockPos pos = decodeBlockPos(*it);
+	std::vector<BlockPos> vec = m_db->getBlockPos();
+	for (std::vector<BlockPos>::iterator it = vec.begin(); it != vec.end(); ++it) {
+		BlockPos pos = *it;
 		// Check that it's in geometry (from --geometry option)
 		if (pos.x < m_geomX || pos.x > m_geomX2 || pos.z < m_geomY || pos.z > m_geomY2) {
 			continue;
@@ -364,17 +335,6 @@ void TileGenerator::loadBlocks()
 	m_positions.unique();
 }
 
-inline BlockPos TileGenerator::decodeBlockPos(int64_t blockId) const
-{
-	BlockPos pos;
-	pos.x = unsignedToSigned(pythonmodulo(blockId, 4096), 2048);
-	blockId = (blockId - pos.x) / 4096;
-	pos.y = unsignedToSigned(pythonmodulo(blockId, 4096), 2048);
-	blockId = (blockId - pos.y) / 4096;
-	pos.z = unsignedToSigned(pythonmodulo(blockId, 4096), 2048);
-	return pos;
-}
-
 void TileGenerator::createImage()
 {
 	m_mapWidth = (m_xMax - m_xMin + 1) * 16;
@@ -385,27 +345,13 @@ void TileGenerator::createImage()
 	gdImageFilledRectangle(m_image, 0, 0, m_mapWidth + m_border - 1, m_mapHeight + m_border -1, color2int(m_bgColor));
 }
 
-std::map<int, TileGenerator::BlockList> TileGenerator::getBlocksOnZ(int zPos)
-{
-	DBBlockList in = m_db->getBlocksOnZ(zPos);
-	std::map<int, BlockList> out;
-	for(DBBlockList::const_iterator it = in.begin(); it != in.end(); ++it) {
-		Block b = Block(decodeBlockPos(it->first), it->second);
-		if(out.find(b.first.x) == out.end()) {
-			BlockList bl;
-			out[b.first.x] = bl;
-		}
-		out[b.first.x].push_back(b);
-	}
-	return out;
-}
-
 void TileGenerator::renderMap()
 {
 	std::list<int> zlist = getZValueList();
 	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
 		int zPos = *zPosition;
-		std::map<int, BlockList> blocks = getBlocksOnZ(zPos);
+		std::map<int16_t, BlockList> blocks;
+		m_db->getBlocksOnZ(blocks, zPos);
 		for (std::list<std::pair<int, int> >::const_iterator position = m_positions.begin(); position != m_positions.end(); ++position) {
 			if (position->second != zPos) {
 				continue;
@@ -436,8 +382,8 @@ void TileGenerator::renderMap()
 
 				ZlibDecompressor decompressor(data, length);
 				decompressor.setSeekPos(dataOffset);
-				ZlibDecompressor::string mapData = decompressor.decompress();
-				ZlibDecompressor::string mapMetadata = decompressor.decompress();
+				ustring mapData = decompressor.decompress();
+				ustring mapMetadata = decompressor.decompress();
 				dataOffset = decompressor.seekPos();
 
 				// Skip unused data
@@ -519,7 +465,7 @@ void TileGenerator::renderMap()
 	}
 }
 
-inline void TileGenerator::renderMapBlock(const unsigned_string &mapBlock, const BlockPos &pos, int version)
+inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version)
 {
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;

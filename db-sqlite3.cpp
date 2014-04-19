@@ -1,6 +1,7 @@
-#include "db-sqlite3.h"
 #include <stdexcept>
 #include <unistd.h> // for usleep
+#include "db-sqlite3.h"
+#include "types.h"
 
 #define SQLRES(f, good) \
 	result = (sqlite3_##f);\
@@ -9,36 +10,42 @@
 	}
 #define SQLOK(f) SQLRES(f, SQLITE_OK)
 
-DBSQLite3::DBSQLite3(const std::string &mapdir) {
+
+DBSQLite3::DBSQLite3(const std::string &mapdir)
+{
 	int result;
 	std::string db_name = mapdir + "map.sqlite";
 
-	SQLOK(open_v2(db_name.c_str(), &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_PRIVATECACHE, 0))
+	SQLOK(open_v2(db_name.c_str(), &db, SQLITE_OPEN_READONLY |
+			SQLITE_OPEN_PRIVATECACHE, 0))
 
 	SQLOK(prepare_v2(db,
-			"SELECT pos, data FROM blocks WHERE (pos >= ? AND pos <= ?)",
-		-1, &stmt_get_blocks, NULL))
+			"SELECT pos, data FROM blocks WHERE pos BETWEEN ? AND ?",
+		-1, &stmt_get_blocks_z, NULL))
 
 	SQLOK(prepare_v2(db,
 			"SELECT pos FROM blocks",
 		-1, &stmt_get_block_pos, NULL))
 }
 
-DBSQLite3::~DBSQLite3() {
+
+DBSQLite3::~DBSQLite3()
+{
 	int result;
-	SQLOK(finalize(stmt_get_blocks));
+	SQLOK(finalize(stmt_get_blocks_z));
 	SQLOK(finalize(stmt_get_block_pos));
 
 	SQLOK(close(db));
 }
 
-std::vector<int64_t> DBSQLite3::getBlockPos() {
-	std::vector<int64_t> vec;
+std::vector<BlockPos> DBSQLite3::getBlockPos()
+{
 	int result;
+	std::vector<BlockPos> positions;
 	while ((result = sqlite3_step(stmt_get_block_pos)) != SQLITE_DONE) {
 		if (result == SQLITE_ROW) {
-			int64_t blockpos = sqlite3_column_int64(stmt_get_block_pos, 0);
-			vec.push_back(blockpos);
+			int64_t posHash = sqlite3_column_int64(stmt_get_block_pos, 0);
+			positions.push_back(decodeBlockPos(posHash));
 		} else if (result == SQLITE_BUSY) { // Wait some time and try again
 			usleep(10000);
 		} else {
@@ -46,35 +53,36 @@ std::vector<int64_t> DBSQLite3::getBlockPos() {
 		}
 	}
 	SQLOK(reset(stmt_get_block_pos));
-	return vec;
+	return positions;
 }
 
-DBBlockList DBSQLite3::getBlocksOnZ(int zPos)
+
+void DBSQLite3::getBlocksOnZ(std::map<int16_t, BlockList> &blocks, int16_t zPos)
 {
-	DBBlockList blocks;
-
-	int64_t psMin = (static_cast<sqlite3_int64>(zPos) * 16777216L) - 0x800000;
-	int64_t psMax = (static_cast<sqlite3_int64>(zPos) * 16777216L) + 0x7fffff;
-
-	sqlite3_bind_int64(stmt_get_blocks, 1, psMin);
-	sqlite3_bind_int64(stmt_get_blocks, 2, psMax);
-
 	int result;
-	while ((result = sqlite3_step(stmt_get_blocks)) != SQLITE_DONE) {
+
+	// Magic numbers!
+	int64_t minPos = (zPos * 0x1000000) - 0x800000;
+	int64_t maxPos = (zPos * 0x1000000) + 0x7FFFFF;
+
+	SQLOK(bind_int64(stmt_get_blocks_z, 1, minPos));
+	SQLOK(bind_int64(stmt_get_blocks_z, 2, maxPos));
+
+	while ((result = sqlite3_step(stmt_get_blocks_z)) != SQLITE_DONE) {
 		if (result == SQLITE_ROW) {
-			int64_t blocknum = sqlite3_column_int64(stmt_get_blocks, 0);
-			const unsigned char *data = reinterpret_cast<const unsigned char *>(sqlite3_column_blob(stmt_get_blocks, 1));
-			int size = sqlite3_column_bytes(stmt_get_blocks, 1);
-			blocks.push_back(DBBlock(blocknum, std::basic_string<unsigned char>(data, size)));
+			int64_t posHash = sqlite3_column_int64(stmt_get_blocks_z, 0);
+			const unsigned char *data = reinterpret_cast<const unsigned char *>(
+					sqlite3_column_blob(stmt_get_blocks_z, 1));
+			size_t size = sqlite3_column_bytes(stmt_get_blocks_z, 1);
+			Block b(decodeBlockPos(posHash), ustring(data, size));
+			blocks[b.first.x].push_back(b);
 		} else if (result == SQLITE_BUSY) { // Wait some time and try again
 			usleep(10000);
 		} else {
 			throw std::runtime_error(sqlite3_errmsg(db));
 		}
 	}
-	SQLOK(reset(stmt_get_blocks));
-
-	return blocks;
+	SQLOK(reset(stmt_get_blocks_z));
 }
 
 #undef SQLRES

@@ -12,12 +12,12 @@
 
 #include <cstdlib>
 #include <string>
+#include "types.h"
 
 
 class ZlibDecompressor
 {
 public:
-	typedef std::basic_string<unsigned char> string;
 	class DecompressError {
 	};
 
@@ -25,7 +25,7 @@ public:
 	~ZlibDecompressor();
 	void setSeekPos(std::size_t seekPos);
 	std::size_t seekPos() const;
-	string decompress();
+	ustring decompress();
 
 private:
 	const unsigned char *m_data;
