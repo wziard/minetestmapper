@@ -60,6 +60,26 @@ if(ENABLE_LEVELDB)
 	endif(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
 endif(ENABLE_LEVELDB)
 
+# Find redis
+set(USE_REDIS 0)
+
+OPTION(ENABLE_REDIS "Enable redis backend")
+
+if(ENABLE_REDIS)
+	find_library(REDIS_LIBRARY hiredis)
+	find_path(REDIS_INCLUDE_DIR hiredis.h PATH_SUFFIXES hiredis)
+	message (STATUS "redis library: ${REDIS_LIBRARY}")
+	message (STATUS "redis headers: ${REDIS_INCLUDE_DIR}")
+	if(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
+		set(USE_REDIS 1)
+		message(STATUS "redis backend enabled")
+		include_directories(${REDIS_INCLUDE_DIR})
+	else(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
+		set(USE_REDIS 0)
+		message(STATUS "redis not found!")
+	endif(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
+endif(ENABLE_REDIS)
+
 include_directories(
 	"${PROJECT_BINARY_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
@@ -88,6 +108,10 @@ if(USE_LEVELDB)
 	set(mapper_SRCS ${mapper_SRCS} db-leveldb.cpp)
 endif(USE_LEVELDB)
 
+if(USE_REDIS)
+	set(mapper_SRCS ${mapper_SRCS} db-redis.cpp)
+endif(USE_REDIS)
+
 add_executable(minetestmapper
 	${mapper_SRCS}
 )
@@ -96,6 +120,7 @@ target_link_libraries(
 	minetestmapper
 	${SQLITE3_LIBRARY}
 	${LEVELDB_LIBRARY}
+	${REDIS_LIBRARY}
 	${LIBGD_LIBRARY}
 	${ZLIB_LIBRARY}
 )

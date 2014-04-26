@@ -4,6 +4,7 @@
 #define CMAKE_CONFIG_H
 
 #define USE_LEVELDB @USE_LEVELDB@
+#define USE_REDIS @USE_REDIS@
 
 #endif
 
