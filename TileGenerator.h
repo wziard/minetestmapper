@@ -14,7 +14,7 @@
 
 struct Color {
 	Color(): r(0xFF), g(0xFF), b(0xFF), a(0) {};
-	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b), a(0xFF) {};
+	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b), a(0) {};
 	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a): r(r), g(g), b(b), a(a) {};
 	uint8_t r;
 	uint8_t g;
