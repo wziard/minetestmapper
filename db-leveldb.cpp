@@ -25,7 +25,7 @@ DBLevelDB::DBLevelDB(const std::string &mapdir)
 	options.create_if_missing = false;
 	leveldb::Status status = leveldb::DB::Open(options, mapdir + "map.db", &db);
 	if (!status.ok()) {
-		throw std::runtime_error("Failed to open Database");
+		throw std::runtime_error(std::string("Failed to open Database: ") + status.ToString());
 	}
 
 	loadPosCache();
