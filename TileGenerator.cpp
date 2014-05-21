@@ -264,33 +264,26 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 void TileGenerator::parseColorsStream(std::istream &in)
 {
+	char line[128], *p;
 	while (in.good()) {
-		string name;
-		ColorEntry color;
-		in >> name;
-		if (name[0] == '#') {
-			in.ignore(65536, '\n');
-			in >> name;
-		}
-		while (name == "\n" && in.good()) {
-			in >> name;
-		}
-		int r, g, b, a, t;
-		in >> r;
-		in >> g;
-		in >> b;
-		if(in.peek() != '\n') {
-			in >> a;
-			if(in.peek() != '\n')
-				in >> t;
-			else
-				t = 0;
-		} else
-			a = 0xFF;
-		if (in.good()) {
-			color = ColorEntry(r,g,b,a,t);
-			m_colors[name] = color;
-		}
+		in.getline(line, 128);
+		p = line;
+		while(*p++ != '\0')
+			if(*p == '#') {
+				*p = '\0'; // Cut off at the first #
+				break;
+			}
+
+		char name[75];
+		uint8_t r, g, b, a, t;
+		a = 255;
+		t = 0;
+
+		sscanf(line, "%75s %hhu %hhu %hhu %hhu %hhu", name, &r, &g, &b, &a, &t);
+		if(strlen(name) == 0)
+			break;
+		ColorEntry color = ColorEntry(r, g, b, a, t);
+		m_colors[name] = color;
 	}
 }
 
@@ -663,4 +656,3 @@ inline int TileGenerator::getImageY(int val) const
 {
 	return val + m_border;
 }
-
