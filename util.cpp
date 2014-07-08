@@ -25,7 +25,7 @@ inline std::string trim(const std::string &s)
 
 #define EOFCHECK() \
    if(is.eof()) \
-    throw std::runtime_error("setting not found");
+    throw std::runtime_error(((std::string) "Setting '") + name + "' not found");
 
 std::string get_setting(std::string name, std::istream &is)
 {
