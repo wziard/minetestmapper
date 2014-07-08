@@ -134,11 +134,11 @@ void DBRedis::loadPosCache()
 	if(reply->type != REDIS_REPLY_ARRAY)
 		throw std::runtime_error("Failed to get keys from database");
 	for(size_t i = 0; i < reply->elements; i++) {
-		if(!reply->element[i]->type == REDIS_REPLY_STRING)
+		if(reply->element[i]->type != REDIS_REPLY_STRING)
 			throw std::runtime_error("Got wrong response to 'HKEYS %s' command");
 		posCache.push_back(decodeBlockPos(stoi64(reply->element[i]->str)));
 	}
-	
+
 	freeReplyObject(reply);
 }
 
@@ -164,4 +164,3 @@ void DBRedis::getBlocksOnZ(std::map<int16_t, BlockList> &blocks, int16_t zPos)
 		freeReplyObject(reply);
 	}
 }
-
