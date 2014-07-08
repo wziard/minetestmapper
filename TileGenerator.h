@@ -86,7 +86,6 @@ private:
 	bool m_drawAlpha;
 	bool m_shading;
 	int m_border;
-	std::string m_backend;
 
 	DB *m_db;
 	gdImagePtr m_image;
@@ -114,4 +113,3 @@ private:
 }; // class TileGenerator
 
 #endif // TILEGENERATOR_HEADER
-

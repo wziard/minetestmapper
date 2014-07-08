@@ -101,6 +101,7 @@ set(mapper_SRCS
 	TileGenerator.cpp
 	ZlibDecompressor.cpp
 	mapper.cpp
+	util.cpp
 	db-sqlite3.cpp
 )
 

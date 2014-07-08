@@ -34,7 +34,6 @@ void usage()
 			"  --noshading\n"
 			"  --min-y <y>\n"
 			"  --max-y <y>\n"
-			"  --backend <sqlite3/leveldb/redis>\n"
 			"  --geometry x:y+w+h\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
@@ -58,8 +57,7 @@ int main(int argc, char *argv[])
 		{"noshading", no_argument, 0, 'H'},
 		{"geometry", required_argument, 0, 'g'},
 		{"min-y", required_argument, 0, 'a'},
-		{"max-y", required_argument, 0, 'c'},
-		{"backend", required_argument, 0, 'd'},
+		{"max-y", required_argument, 0, 'c'}
 	};
 
 	string input;
@@ -144,9 +142,6 @@ int main(int argc, char *argv[])
 					}
 					generator.setGeometry(x, y, w, h);
 				}
-				break;
-			case 'd':
-				generator.setBackend(optarg);
 				break;
 			default:
 				exit(1);

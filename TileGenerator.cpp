@@ -13,6 +13,7 @@
 #include "PlayerAttributes.h"
 #include "TileGenerator.h"
 #include "ZlibDecompressor.h"
+#include "util.h"
 #include "db-sqlite3.h"
 #if USE_LEVELDB
 #include "db-leveldb.h"
@@ -96,7 +97,6 @@ TileGenerator::TileGenerator():
 	m_drawAlpha(false),
 	m_shading(true),
 	m_border(0),
-	m_backend("sqlite3"),
 	m_image(0),
 	m_xMin(INT_MAX),
 	m_xMax(INT_MIN),
@@ -233,11 +233,6 @@ void TileGenerator::parseColorsFile(const std::string &fileName)
 	parseColorsStream(in);
 }
 
-void TileGenerator::setBackend(std::string backend)
-{
-	m_backend = backend;
-}
-
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
 	string input_path = input;
@@ -289,18 +284,24 @@ void TileGenerator::parseColorsStream(std::istream &in)
 
 void TileGenerator::openDb(const std::string &input)
 {
-	if(m_backend == "sqlite3")
+	std::ifstream ifs((input + "/world.mt").c_str());
+	if(!ifs.good())
+		throw std::runtime_error("Failed to read world.mt");
+	std::string backend = get_setting("backend", ifs);
+	ifs.close();
+
+	if(backend == "sqlite3")
 		m_db = new DBSQLite3(input);
 #if USE_LEVELDB
-	else if(m_backend == "leveldb")
+	else if(backend == "leveldb")
 		m_db = new DBLevelDB(input);
 #endif
 #if USE_REDIS
-	else if(m_backend == "redis")
+	else if(backend == "redis")
 		m_db = new DBRedis(input);
 #endif
 	else
-		throw std::runtime_error(((std::string) "Unknown map backend: ") + m_backend);
+		throw std::runtime_error(((std::string) "Unknown map backend: ") + backend);
 }
 
 void TileGenerator::loadBlocks()
