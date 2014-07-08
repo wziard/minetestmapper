@@ -504,7 +504,7 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 							col = c;
 						else
 							col = mixColors(col, c);
-						if(col.a == 0xFF) {
+						if(col.a == 0xFF || y == minY) {
 							m_image->tpixels[imageY][imageX] = color2int(col);
 							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thicken = th;
 						} else {
