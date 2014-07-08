@@ -66,6 +66,7 @@ private:
 	void renderMap();
 	std::list<int> getZValueList() const;
 	void renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version);
+	void renderMapBlockBottom(const BlockPos &pos);
 	void renderShading(int zPos);
 	void renderScale();
 	void renderOrigin();
@@ -106,7 +107,10 @@ private:
 	std::map<int, std::string> m_nameMap;
 	ColorMap m_colors;
 	uint16_t m_readedPixels[16];
+	uint16_t m_readInfo[16];
 	std::set<std::string> m_unknownNodes;
+	Color m_col[16][16];
+	uint8_t m_th[16][16];
 
 	int m_blockAirId;
 	int m_blockIgnoreId;
