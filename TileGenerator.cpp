@@ -96,6 +96,7 @@ TileGenerator::TileGenerator():
 	m_drawScale(false),
 	m_drawAlpha(false),
 	m_shading(true),
+	m_backend(""),
 	m_border(0),
 	m_image(0),
 	m_xMin(INT_MAX),
@@ -179,6 +180,11 @@ void TileGenerator::setDrawAlpha(bool drawAlpha)
 void TileGenerator::setShading(bool shading)
 {
 	m_shading = shading;
+}
+
+void TileGenerator::setBackend(std::string backend)
+{
+	m_backend = backend;
 }
 
 void TileGenerator::setGeometry(int x, int y, int w, int h)
@@ -284,11 +290,14 @@ void TileGenerator::parseColorsStream(std::istream &in)
 
 void TileGenerator::openDb(const std::string &input)
 {
-	std::ifstream ifs((input + "/world.mt").c_str());
-	if(!ifs.good())
-		throw std::runtime_error("Failed to read world.mt");
-	std::string backend = get_setting("backend", ifs);
-	ifs.close();
+	std::string backend = m_backend;
+	if(backend == "") {
+		std::ifstream ifs((input + "/world.mt").c_str());
+		if(!ifs.good())
+			throw std::runtime_error("Failed to read world.mt");
+		backend = get_setting("backend", ifs);
+		ifs.close();
+	}
 
 	if(backend == "sqlite3")
 		m_db = new DBSQLite3(input);

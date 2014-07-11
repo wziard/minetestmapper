@@ -34,6 +34,7 @@ void usage()
 			"  --noshading\n"
 			"  --min-y <y>\n"
 			"  --max-y <y>\n"
+			"  --backend <backend>\n"
 			"  --geometry x:y+w+h\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
 		{"drawscale", no_argument, 0, 'S'},
 		{"drawalpha", no_argument, 0, 'e'},
 		{"noshading", no_argument, 0, 'H'},
+		{"backend", required_argument, 0, 'd'},
 		{"geometry", required_argument, 0, 'g'},
 		{"min-y", required_argument, 0, 'a'},
 		{"max-y", required_argument, 0, 'c'}
@@ -109,10 +111,13 @@ int main(int argc, char *argv[])
 				generator.setDrawScale(true);
 				break;
 			case 'e':
-			    generator.setDrawAlpha(true);
-			    break;
+				generator.setDrawAlpha(true);
+				break;
 			case 'H':
 				generator.setShading(false);
+				break;
+			case 'd':
+				generator.setBackend(optarg);
 				break;
 			case 'a': {
 					istringstream iss;

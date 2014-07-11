@@ -86,6 +86,7 @@ private:
 	bool m_drawScale;
 	bool m_drawAlpha;
 	bool m_shading;
+	std::string m_backend;
 	int m_border;
 
 	DB *m_db;
