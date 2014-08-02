@@ -7,8 +7,19 @@ set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-std=c++0x -Wall -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -std=c++0x -Wall -Wextra -DDEBUG")
+
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build.")
+endif()
+
+option(USE_CXX11 "Use C++11" FALSE)
+if(USE_CXX11)
+	set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++11 -Wall -DNDEBUG")
+	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -std=c++11 -Wall -Wextra")
+else(USE_CXX11)
+	set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG")
+	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall -Wextra")
+endif(USE_CXX11)
 
 # Find libgd
 find_library(LIBGD_LIBRARY gd)

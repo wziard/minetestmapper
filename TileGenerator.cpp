@@ -513,7 +513,7 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 				if (content == m_blockIgnoreId || content == m_blockAirId) {
 					continue;
 				}
-				std::map<int, std::string>::iterator blockName = m_nameMap.find(content);
+				NameMap::iterator blockName = m_nameMap.find(content);
 				if (blockName == m_nameMap.end())
 					continue;
 				const string &name = blockName->second;
@@ -688,7 +688,7 @@ void TileGenerator::printUnknown()
 {
 	if (m_unknownNodes.size() > 0) {
 		std::cerr << "Unknown nodes:" << std::endl;
-		for (std::set<std::string>::iterator node = m_unknownNodes.begin(); node != m_unknownNodes.end(); ++node) {
+		for (NameSet::iterator node = m_unknownNodes.begin(); node != m_unknownNodes.end(); ++node) {
 			std::cerr << *node << std::endl;
 		}
 	}

@@ -4,8 +4,14 @@
 #include <gd.h>
 #include <iosfwd>
 #include <list>
+#include <config.h>
+#if USE_CXX11
+#include <unordered_map>
+#include <unordered_set>
+#else
 #include <map>
 #include <set>
+#endif
 #include <stdint.h>
 #include <string>
 #include "PixelAttributes.h"
@@ -37,7 +43,15 @@ struct ColorEntry {
 class TileGenerator
 {
 private:
+#if USE_CXX11
+	typedef std::unordered_map<std::string, ColorEntry> ColorMap;
+	typedef std::unordered_map<int, std::string> NameMap;
+	typedef std::unordered_set<std::string> NameSet;
+#else
 	typedef std::map<std::string, ColorEntry> ColorMap;
+	typedef std::map<int, std::string> NameMap;
+	typedef std::set<std::string> NameSet;
+#endif
 
 public:
 	TileGenerator();
@@ -105,11 +119,11 @@ private:
 	int m_mapWidth;
 	int m_mapHeight;
 	std::list<std::pair<int, int> > m_positions;
-	std::map<int, std::string> m_nameMap;
+	NameMap m_nameMap;
 	ColorMap m_colors;
 	uint16_t m_readedPixels[16];
 	uint16_t m_readInfo[16];
-	std::set<std::string> m_unknownNodes;
+	NameSet m_unknownNodes;
 	Color m_col[16][16];
 	uint8_t m_th[16][16];
 

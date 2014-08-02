@@ -19,4 +19,7 @@
 #include "cmake_config.h"
 #else
 #define USE_LEVELDB 0
+#define USE_REDIS 0
+
+#define USE_CXX11 0
 #endif
