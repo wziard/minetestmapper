@@ -39,6 +39,18 @@ static inline int color2int(Color c)
     return rgb2int(c.r, c.g, c.b, c.a);
 }
 
+// rounds n (upwards) to a multiple of f while preserving the sign-bit of n
+static inline int round_multiple_nosign(int n, int f)
+{
+	int nn, ns;
+	nn = (n >= 0) ? n : -n;
+	ns = (n >= 0) ? 1 : -1;
+	if (nn % f == 0)
+		return n; // n == nn * ns
+	else
+		return ns * (n + f - (n % f));
+}
+
 static inline int readBlockContent(const unsigned char *mapData, int version, int datapos)
 {
 	if (version >= 24) {
@@ -105,10 +117,10 @@ TileGenerator::TileGenerator():
 	m_zMax(INT_MIN),
 	m_yMin(-30000),
 	m_yMax(30000),
-	m_geomX(INT_MIN),
-	m_geomY(INT_MIN),
-	m_geomX2(INT_MAX),
-	m_geomY2(INT_MAX)
+	m_geomX(-2048),
+	m_geomY(-2048),
+	m_geomX2(2048),
+	m_geomY2(2048)
 {
 }
 
@@ -189,34 +201,10 @@ void TileGenerator::setBackend(std::string backend)
 
 void TileGenerator::setGeometry(int x, int y, int w, int h)
 {
-	if (x > 0) {
-		m_geomX = x / 16;
-	}
-	else {
-		m_geomX = (x - 15) / 16;
-	}
-	if (y > 0) {
-		m_geomY = y / 16;
-	}
-	else {
-		m_geomY = (y - 15) / 16;
-	}
-
-	int x2 = x + w;
-	int y2 = y + h;
-
-	if (x2 > 0) {
-		m_geomX2 = x2 / 16;
-	}
-	else {
-		m_geomX2 = (x2 - 15) / 16;
-	}
-	if (y2 > 0) {
-		m_geomY2 = y2 / 16;
-	}
-	else {
-		m_geomY2 = (y2 - 15) / 16;
-	}
+	m_geomX  = round_multiple_nosign(x, 16) / 16;
+	m_geomY  = round_multiple_nosign(y, 16) / 16;
+	m_geomX2 = round_multiple_nosign(x + w, 16) / 16;
+	m_geomY2 = round_multiple_nosign(y + h, 16) / 16;
 }
 
 void TileGenerator::setMinY(int y)
@@ -319,7 +307,7 @@ void TileGenerator::loadBlocks()
 	for (std::vector<BlockPos>::iterator it = vec.begin(); it != vec.end(); ++it) {
 		BlockPos pos = *it;
 		// Check that it's in geometry (from --geometry option)
-		if (pos.x < m_geomX || pos.x > m_geomX2 || pos.z < m_geomY || pos.z > m_geomY2) {
+		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
 			continue;
 		}
 		// Check that it's between --miny and --maxy
