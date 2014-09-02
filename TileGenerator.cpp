@@ -39,16 +39,16 @@ static inline int color2int(Color c)
     return rgb2int(c.r, c.g, c.b, c.a);
 }
 
-// rounds n (upwards) to a multiple of f while preserving the sign-bit of n
+// rounds n (away from 0) to a multiple of f while preserving the sign of n
 static inline int round_multiple_nosign(int n, int f)
 {
-	int nn, ns;
-	nn = (n >= 0) ? n : -n;
-	ns = (n >= 0) ? 1 : -1;
-	if (nn % f == 0)
-		return n; // n == nn * ns
+	int abs_n, sign;
+	abs_n = (n >= 0) ? n : -n;
+	sign = (n >= 0) ? 1 : -1;
+	if (abs_n % f == 0)
+		return n; // n == abs_n * sign
 	else
-		return ns * (n + f - (n % f));
+		return sign * (abs_n + f - (abs_n % f));
 }
 
 static inline int readBlockContent(const unsigned char *mapData, int version, int datapos)
