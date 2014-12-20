@@ -14,12 +14,14 @@ endif()
 
 option(USE_CXX11 "Use C++11" FALSE)
 if(USE_CXX11)
-	set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++11 -Wall -DNDEBUG")
-	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -std=c++11 -Wall -Wextra")
+	set(CMAKE_CXX_FLAGS "-std=c++11")
+	set(USE_CXX11 1) # We use this in config.h, it needs to be a valid value
 else(USE_CXX11)
-	set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG")
-	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall -Wextra")
+	set(USE_CXX11 0)
 endif(USE_CXX11)
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall")
 
 # Find libgd
 find_library(LIBGD_LIBRARY gd)
