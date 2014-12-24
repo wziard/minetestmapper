@@ -1,6 +1,9 @@
 Minetest Mapper C++
 ===================
 
+.. image:: https://travis-ci.org/minetest/minetestmapper.svg?branch=master
+    :target: https://travis-ci.org/minetest/minetestmapper
+
 A port of minetestmapper.py to C++ from https://github.com/minetest/minetest/tree/master/util
 
 Requirements
