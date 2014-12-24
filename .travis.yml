@@ -1,0 +1,16 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+env:
+  - CXX11=1
+  - CXX11=0
+before_install: ./util/travis/before_install.sh
+script: ./util/travis/script.sh
+notifications:
+  email: false
+matrix:
+  fast_finish: true
+  exclude:
+    - env: CXX11=1
+      compiler: gcc
