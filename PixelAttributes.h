@@ -15,9 +15,9 @@
 #include "config.h"
 
 struct PixelAttribute {
-	PixelAttribute(): height(std::numeric_limits<int>::min()), thicken(0) {};
+	PixelAttribute(): height(std::numeric_limits<int>::min()), thickness(0) {};
 	int height;
-	uint8_t thicken;
+	uint8_t thickness;
 	inline bool valid_height() {
 		return height != std::numeric_limits<int>::min();
 	}

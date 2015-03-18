@@ -281,7 +281,7 @@ void TileGenerator::parseColorsStream(std::istream &in)
 		if(strlen(name) == 0)
 			break;
 		ColorEntry color = ColorEntry(r, g, b, a, t);
-		m_colors[name] = color;
+		m_colorMap[name] = color;
 	}
 }
 
@@ -365,14 +365,14 @@ void TileGenerator::renderMap()
 			}
 
 			for (int i = 0; i < 16; ++i) {
-				m_readedPixels[i] = 0;
+				m_readPixels[i] = 0;
 				m_readInfo[i] = 0;
 			}
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
-					m_col[i][j] = m_bgColor; // This will be drawn by renderMapBlockBottom() for y-rows with only 'air', 'ignore' or unknown nodes if --drawalpha is used
-					m_col[i][j].a = 0; // ..but set alpha to 0 to tell renderMapBlock() not to use this color to mix a shade
-					m_th[i][j] = 0;
+					m_color[i][j] = m_bgColor; // This will be drawn by renderMapBlockBottom() for y-rows with only 'air', 'ignore' or unknown nodes if --drawalpha is used
+					m_color[i][j].a = 0; // ..but set alpha to 0 to tell renderMapBlock() not to use this color to mix a shade
+					m_thickness[i][j] = 0;
 				}
 			}
 
@@ -464,23 +464,23 @@ void TileGenerator::renderMap()
 
 				renderMapBlock(mapData, pos, version);
 
-				bool allReaded = true;
+				bool allRead = true;
 				for (int i = 0; i < 16; ++i) {
-					if (m_readedPixels[i] != 0xffff) {
-						allReaded = false;
+					if (m_readPixels[i] != 0xffff) {
+						allRead = false;
 					}
 				}
-				if (allReaded) {
+				if (allRead) {
 					break;
 				}
 			}
-			bool allReaded = true;
+			bool allRead = true;
 			for (int i = 0; i < 16; ++i) {
-				if (m_readedPixels[i] != 0xffff) {
-					allReaded = false;
+				if (m_readPixels[i] != 0xffff) {
+					allRead = false;
 				}
 			}
-			if (!allReaded) {
+			if (!allRead) {
 				renderMapBlockBottom(blockStack.begin()->first);
 			}
 		}
@@ -499,7 +499,7 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 	for (int z = 0; z < 16; ++z) {
 		int imageY = getImageY(zBegin + 15 - z);
 		for (int x = 0; x < 16; ++x) {
-			if (m_readedPixels[z] & (1 << x)) {
+			if (m_readPixels[z] & (1 << x)) {
 				continue;
 			}
 			int imageX = getImageX(xBegin + x);
@@ -514,25 +514,25 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 				if (blockName == m_nameMap.end())
 					continue;
 				const string &name = blockName->second;
-				ColorMap::const_iterator color = m_colors.find(name);
-				if (color != m_colors.end()) {
+				ColorMap::const_iterator color = m_colorMap.find(name);
+				if (color != m_colorMap.end()) {
 					const Color c = color->second.to_color();
 					if (m_drawAlpha) {
-						if (m_col[z][x].a == 0)
-							m_col[z][x] = c;
+						if (m_color[z][x].a == 0)
+							m_color[z][x] = c;
 						else
-							m_col[z][x] = mixColors(m_col[z][x], c);
-						if(m_col[z][x].a == 0xFF) {
-							m_image->tpixels[imageY][imageX] = color2int(m_col[z][x]);
-							m_readedPixels[z] |= (1 << x);
-							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thicken = m_th[z][x];
+							m_color[z][x] = mixColors(m_color[z][x], c);
+						if(m_color[z][x].a == 0xFF) {
+							m_image->tpixels[imageY][imageX] = color2int(m_color[z][x]);
+							m_readPixels[z] |= (1 << x);
+							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 						} else {
-							m_th[z][x] = (m_th[z][x] + color->second.t) / 2.0;
+							m_thickness[z][x] = (m_thickness[z][x] + color->second.t) / 2.0;
 							continue;
 						}
 					} else {
 						m_image->tpixels[imageY][imageX] = color2int(c);
-						m_readedPixels[z] |= (1 << x);
+						m_readPixels[z] |= (1 << x);
 					}
 					if(!(m_readInfo[z] & (1 << x))) {
 						m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
@@ -555,15 +555,15 @@ inline void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
 	for (int z = 0; z < 16; ++z) {
 		int imageY = getImageY(zBegin + 15 - z);
 		for (int x = 0; x < 16; ++x) {
-			if (m_readedPixels[z] & (1 << x)) {
+			if (m_readPixels[z] & (1 << x)) {
 				continue;
 			}
 			int imageX = getImageX(xBegin + x);
 
 			if (m_drawAlpha) {
-				m_image->tpixels[imageY][imageX] = color2int(m_col[z][x]);
-				m_readedPixels[z] |= (1 << x);
-				m_blockPixelAttributes.attribute(15 - z, xBegin + x).thicken = m_th[z][x];
+				m_image->tpixels[imageY][imageX] = color2int(m_color[z][x]);
+				m_readPixels[z] |= (1 << x);
+				m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 			}
 		}
 	}
@@ -591,7 +591,7 @@ inline void TileGenerator::renderShading(int zPos)
 			}
 			// more thickness -> less visible shadows: t=0 -> 100% visible, t=255 -> 0% visible
 			if (m_drawAlpha)
-				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thicken) / 255.0);
+				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thickness) / 255.0);
 			int sourceColor = m_image->tpixels[imageY][getImageX(x)] & 0xffffff;
 			uint8_t r = (sourceColor & 0xff0000) >> 16;
 			uint8_t g = (sourceColor & 0x00ff00) >> 8;

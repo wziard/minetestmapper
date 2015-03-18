@@ -120,12 +120,12 @@ private:
 	int m_mapHeight;
 	std::list<std::pair<int, int> > m_positions;
 	NameMap m_nameMap;
-	ColorMap m_colors;
-	uint16_t m_readedPixels[16];
+	ColorMap m_colorMap;
+	uint16_t m_readPixels[16];
 	uint16_t m_readInfo[16];
 	NameSet m_unknownNodes;
-	Color m_col[16][16];
-	uint8_t m_th[16][16];
+	Color m_color[16][16];
+	uint8_t m_thickness[16][16];
 
 	int m_blockAirId;
 	int m_blockIgnoreId;
