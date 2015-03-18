@@ -589,6 +589,7 @@ inline void TileGenerator::renderShading(int zPos)
 			if (d > 36) {
 				d = 36;
 			}
+			// more thickness -> less visible shadows: t=0 -> 100% visible, t=255 -> 0% visible
 			if (m_drawAlpha)
 				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thicken) / 255.0);
 			int sourceColor = m_image->tpixels[imageY][getImageX(x)] & 0xffffff;
