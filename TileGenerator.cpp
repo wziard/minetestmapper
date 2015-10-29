@@ -320,7 +320,7 @@ void TileGenerator::loadBlocks()
 			continue;
 		}
 		// Check that it's between --miny and --maxy
-		if (pos.y < m_yMin * 16 || pos.y > m_yMax * 16) {
+		if (pos.y * 16 < m_yMin || pos.y * 16 > m_yMax) {
 			continue;
 		}
 		// Adjust minimum and maximum positions to the nearest block
