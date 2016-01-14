@@ -8,16 +8,26 @@ local function nd_get_tiles(nd)
 	return nil
 end
 
+local function pairs_s(dict)
+	local keys = {}
+	for k in pairs(dict) do
+		table.insert(keys, k)
+	end
+	table.sort(keys)
+	return ipairs(keys)
+end
+
 minetest.register_chatcommand("dumpnodes", {
 	params = "",
 	description = "",
 	func = function(plname, param)
 		local n = 0
 		local ntbl = {}
-		for nn, nd in pairs(minetest.registered_nodes) do
+		for _, nn in pairs_s(minetest.registered_nodes) do
+			local nd = minetest.registered_nodes[nn]
 			local prefix, name = nn:match('(.*):(.*)')
 			if prefix == nil or name == nil or prefix == '' or name == '' then
-				-- nothing
+				print("ignored(1): " .. nn)
 			else
 				if ntbl[prefix] == nil then
 					ntbl[prefix] = {}
@@ -27,11 +37,13 @@ minetest.register_chatcommand("dumpnodes", {
 		end
 		local out, err = io.open('nodes.txt', 'wb')
 		if not out then
-			return minetest.chat_send_player(plname, 'io.open: ' .. err)
+			return true, "io.open(): " .. err
 		end
-		for prefix, i in pairs(ntbl) do
+		for _, prefix in pairs_s(ntbl) do
+			local nodes = ntbl[prefix]
 			out:write('# ' .. prefix .. '\n')
-			for name, nd in pairs(i) do
+			for _, name in pairs_s(nodes) do
+				local nd = nodes[name]
 				if nd.drawtype ~= 'airlike' and nd_get_tiles(nd) ~= nil then
 					local tl = nd_get_tiles(nd)[1]
 					if type(tl) == 'table' then
@@ -40,12 +52,14 @@ minetest.register_chatcommand("dumpnodes", {
 					tl = (tl .. '^'):match('(.-)^')
 					out:write(prefix .. ':' .. name .. ' ' .. tl .. '\n')
 					n = n + 1
+				else
+					print("ignored(2): " .. prefix .. ':' .. name)
 				end
 			end
 			out:write('\n')
 		end
 		out:close()
-		minetest.chat_send_player(plname, n .. " nodes dumped.")
+		return true, n .. " nodes dumped."
 	end,
 })
 ==FILE== avgcolor.py
@@ -53,51 +67,63 @@ minetest.register_chatcommand("dumpnodes", {
 import sys
 from PIL import Image
 
-def avg2(a, b):
-	return int((a + b) / 2.0)
+def tsum(a, b):
+	return tuple(sum(e) for e in zip(a, b))
 
-def avg2t3i0(a, b):
-	return tuple(avg2(t[0], t[1]) for t in zip(a[:3], b[:3]))
-
-if len(sys.argv) <= 1:
+if len(sys.argv) < 2:
+	print("Prints average color (RGB) of input image")
 	print("Usage: %s <input>" % sys.argv[0])
-else:
-	inp = Image.open(sys.argv[1])
-	inp = inp.convert('RGBA')
-	ind = inp.load()
-	avgc = -1
-	for x in range(inp.size[0]):
-		for y in range(inp.size[1]):
-			pxl = ind[x, y]
-			if pxl[3] < 128:
-				continue
-			if avgc == -1:
-				avgc = pxl[:3]
-			else:
-				avgc = avg2t3i0(avgc, pxl)
-	if avgc == -1:
-		sys.stderr.write('Warning: did not find average color\n')
-		print('0 0 0')
-	else:
-		print("%d %d %d" % avgc)
+	exit(1)
 
-==COMMAND==
+inp = Image.open(sys.argv[1])
+inp = inp.convert('RGBA')
+ind = inp.load()
+
+cl = (0, 0, 0)
+counted = 0
+for x in range(inp.size[0]):
+	for y in range(inp.size[1]):
+		px = ind[x, y]
+		if px[3] < 128:
+			continue
+		cl = tsum(cl, px[:3])
+		counted = counted + 1
+
+if counted == 0:
+	sys.stderr.write("didn't find avg. color for %s\n" % sys.argv[1])
+	print("0 0 0")
+	exit(0)
+
+cl = tuple(int(n / counted) for n in cl)
+print("%d %d %d" % cl)
+==SCRIPT==
+#!/bin/bash -e
+
+AVGCOLOR_PATH=/path/to/avgcolor.py
+MTGAME_PATH=/path/to/minetest_game
+NODESTXT_PATH=./nodes.txt
+COLORSTXT_PATH=./colors.txt
+
 while read -r p; do
 	set -- junk $p
 	shift
 	if [[ ! $1 == "#" && ! $1 == "" ]]; then
-		echo $1 `python /path/to/avgcolor.py $(find /path/to/minetest/directory/ -type f -name $2)`
+		echo $1 `python $AVGCOLOR_PATH $(find $MTGAME_PATH -type f -name $2)`
 		echo $1 1>&2
+	else
+		echo "$p"
 	fi
-done < nodes.txt > colors.txt
-# Use nicer colors for water and lava
-sed -re 's/^default:water_([a-z]+) [0-9 ]+$/default:water_\1 39 66 106 128 224/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
-sed -re 's/^default:river_water_([a-z]+) [0-9 ]+$/default:water_\1 39 66 106 128 224/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
-sed -re 's/^default:lava_([a-z]+) [0-9 ]+$/default:lava_\1 255 100 0/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
-sed -re 's/^default:([a-z_]*)glass ([0-9 ]+)$/default:\1glass \2 64 16/' < colors.txt > tmp$$ && mv tmp$$ colors.txt
+done < $NODESTXT_PATH > $COLORSTXT_PATH
+# Use nicer colors for water and lava:
+sed -re 's/^default:(river_)?water_([a-z]+) [0-9 ]+$/default:\1water_\2 39 66 106 128 224/g' $COLORSTXT_PATH -i
+sed -re 's/^default:lava_([a-z]+) [0-9 ]+$/default:lava_\1 255 100 0/g' $COLORSTXT_PATH -i
+# Add transparency to glass nodes:
+sed -re 's/^default:([a-z_]*glass) ([0-9 ]+)$/default:\1 \2 64 16/g' $COLORSTXT_PATH -i
+sed -re 's/^doors:([a-z_]*glass[a-z_]*) ([0-9 ]+)$/doors:\1 \2 64 16/g' $COLORSTXT_PATH -i
+sed -re 's/^xpanes:(pane_[0-9]+|bar_[0-9]+) ([0-9 ]+)$/xpanes:\1 \2 64 16/g' $COLORSTXT_PATH -i
 ==INSTRUCTIONS==
 1) Make sure avgcolors.py outputs the usage instructions
 2) Add the dumpnodes mod to Minetest
 3) Create a world and load dumpnodes & all mods you want to have a color entry for
 4) Execute /dumpnodes ingame
-5) Use the command to generate colors.txt (obviously don't forget to replace /path/to/... with the actual path)
+5) Run the script to generate colors.txt (make sure to replace /path/to/... with the actual path)
