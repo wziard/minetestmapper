@@ -13,6 +13,6 @@ sudo apt-get install cmake libgd2-noxpm-dev libsqlite3-dev \
 	p7zip-full
 
 # I love how nothing ever works correctly with precise
-wget http://sfan5.pf-control.de/libleveldb-1.18-ubuntu12.04.7z
+wget http://minetest.kitsunemimi.pw/libleveldb-1.18-ubuntu12.04.7z
 sudo 7z x -o/usr libleveldb-1.18-ubuntu12.04.7z
 
