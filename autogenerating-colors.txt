@@ -115,15 +115,16 @@ while read -r p; do
 	fi
 done < $NODESTXT_PATH > $COLORSTXT_PATH
 # Use nicer colors for water and lava:
-sed -re 's/^default:(river_)?water_([a-z]+) [0-9 ]+$/default:\1water_\2 39 66 106 128 224/g' $COLORSTXT_PATH -i
-sed -re 's/^default:lava_([a-z]+) [0-9 ]+$/default:lava_\1 255 100 0/g' $COLORSTXT_PATH -i
+sed -re 's/^default:(river_)?water_([^ ]+) [0-9 ]+$/default:\1water_\2 39 66 106 128 224/g' $COLORSTXT_PATH -i
+sed -re 's/^default:lava_([^ ]+) [0-9 ]+$/default:lava_\1 255 100 0/g' $COLORSTXT_PATH -i
 # Add transparency to glass nodes:
-sed -re 's/^default:([a-z_]*glass) ([0-9 ]+)$/default:\1 \2 64 16/g' $COLORSTXT_PATH -i
-sed -re 's/^doors:([a-z_]*glass[a-z_]*) ([0-9 ]+)$/doors:\1 \2 64 16/g' $COLORSTXT_PATH -i
-sed -re 's/^xpanes:(pane_[0-9]+|bar_[0-9]+) ([0-9 ]+)$/xpanes:\1 \2 64 16/g' $COLORSTXT_PATH -i
+sed -re 's/^default:(.*glass) ([0-9 ]+)$/default:\1 \2 64 16/g' $COLORSTXT_PATH -i
+sed -re 's/^doors:(.*glass[^ ]*) ([0-9 ]+)$/doors:\1 \2 64 16/g' $COLORSTXT_PATH -i
+# Fix xpanes color:
+sed -re 's/^xpanes:(pane_[0-9]+|bar_[0-9]+) [0-9 ]+$/xpanes:\1 194 194 227 64 16/g' $COLORSTXT_PATH -i
 ==INSTRUCTIONS==
 1) Make sure avgcolors.py outputs the usage instructions
 2) Add the dumpnodes mod to Minetest
-3) Create a world and load dumpnodes & all mods you want to have a color entry for
+3) Create a world and load dumpnodes & all mods you want to generate colors for
 4) Execute /dumpnodes ingame
-5) Run the script to generate colors.txt (make sure to replace /path/to/... with the actual path)
+5) Run the script to generate colors.txt (make sure to replace /path/to/... with the actual paths)

@@ -13,6 +13,10 @@ default:acacia_sapling 87 116 61
 default:acacia_tree 188 109 90
 default:acacia_wood 146 60 37
 default:apple 145 20 9
+default:aspen_leaves 66 89 38
+default:aspen_sapling 82 110 43
+default:aspen_tree 218 197 166
+default:aspen_wood 209 198 169
 default:bookshelf 128 99 55
 default:brick 117 71 69
 default:bronzeblock 185 110 15
@@ -43,7 +47,7 @@ default:dry_shrub 101 66 17
 default:fence_wood 128 99 55
 default:furnace 100 96 94
 default:furnace_active 100 96 94
-default:glass 194 194 227 64 16 64 16
+default:glass 194 194 227 64 16
 default:goldblock 230 201 29
 default:grass_1 97 138 53
 default:grass_2 95 136 54
@@ -67,7 +71,7 @@ default:mossycobble 86 90 68
 default:nyancat 198 111 167
 default:nyancat_rainbow 123 100 94
 default:obsidian 19 21 24
-default:obsidian_glass 19 21 23 64 16 64 16
+default:obsidian_glass 19 21 23 64 16
 default:obsidianbrick 20 22 24
 default:papyrus 94 132 33
 default:pine_needles 13 36 21
@@ -100,14 +104,14 @@ default:water_source 39 66 106 128 224
 default:wood 128 99 55
 
 # doors
-doors:door_glass_b_1 192 192 227
-doors:door_glass_b_2 192 192 227
-doors:door_glass_t_1 192 192 227
-doors:door_glass_t_2 192 192 227
-doors:door_obsidian_glass_b_1 16 16 16
-doors:door_obsidian_glass_b_2 16 16 16
-doors:door_obsidian_glass_t_1 16 16 16
-doors:door_obsidian_glass_t_2 16 16 16
+doors:door_glass_b_1 192 192 227 64 16
+doors:door_glass_b_2 192 192 227 64 16
+doors:door_glass_t_1 192 192 227 64 16
+doors:door_glass_t_2 192 192 227 64 16
+doors:door_obsidian_glass_b_1 16 16 16 64 16
+doors:door_obsidian_glass_b_2 16 16 16 64 16
+doors:door_obsidian_glass_t_1 16 16 16 64 16
+doors:door_obsidian_glass_t_2 16 16 16 64 16
 doors:door_steel_b_1 142 142 142
 doors:door_steel_b_2 142 142 142
 doors:door_steel_t_1 142 142 142
@@ -163,6 +167,7 @@ flowers:waterlily 102 158 61
 
 # stairs
 stairs:slab_acacia_wood 146 60 37
+stairs:slab_aspen_wood 209 198 169
 stairs:slab_brick 117 71 69
 stairs:slab_bronzeblock 185 110 15
 stairs:slab_cobble 88 84 82
@@ -183,6 +188,7 @@ stairs:slab_stonebrick 97 94 93
 stairs:slab_straw 211 182 67
 stairs:slab_wood 128 99 55
 stairs:stair_acacia_wood 146 60 37
+stairs:stair_aspen_wood 209 198 169
 stairs:stair_brick 117 71 69
 stairs:stair_bronzeblock 185 110 15
 stairs:stair_cobble 88 84 82
