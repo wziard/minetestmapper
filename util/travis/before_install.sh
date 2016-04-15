@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+
 if [ $CC = "clang" ]; then
 	export PATH="/usr/bin/:$PATH"
 	sudo sh -c 'echo "deb http://ppa.launchpad.net/eudoxos/llvm-3.1/ubuntu precise main" >> /etc/apt/sources.list'
@@ -9,6 +10,7 @@ if [ $CC = "clang" ]; then
 	sudo apt-get install clang
 fi
 
+sudo apt-get update
 sudo apt-get install cmake libgd2-noxpm-dev libsqlite3-dev \
 	p7zip-full
 
