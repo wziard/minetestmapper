@@ -28,15 +28,15 @@ default:cloud 255 255 255
 default:coalblock 57 57 57
 default:cobble 88 84 82
 default:copperblock 192 126 63
-default:desert_cobble 154 98 80
+default:desert_cobble 146 95 76
 default:desert_sand 206 165 98
 default:desert_stone 129 79 60
 default:desert_stonebrick 125 76 58
 default:diamondblock 135 217 223
 default:dirt 95 64 39
 default:dirt_with_dry_grass 187 148 77
-default:dirt_with_grass 66 111 32
-default:dirt_with_grass_footsteps 66 111 32
+default:dirt_with_grass 66 112 31
+default:dirt_with_grass_footsteps 66 112 31
 default:dirt_with_snow 233 235 255
 default:dry_grass_1 208 172 87
 default:dry_grass_2 210 174 87
@@ -44,7 +44,11 @@ default:dry_grass_3 210 174 87
 default:dry_grass_4 211 175 88
 default:dry_grass_5 213 178 92
 default:dry_shrub 101 66 17
-default:fence_wood 128 99 55
+default:fence_acacia_wood 147 60 38
+default:fence_aspen_wood 210 199 170
+default:fence_junglewood 54 37 11
+default:fence_pine_wood 221 184 129
+default:fence_wood 129 100 55
 default:furnace 100 96 94
 default:furnace_active 100 96 94
 default:glass 194 194 227 64 16
@@ -54,14 +58,15 @@ default:grass_2 95 136 54
 default:grass_3 91 133 52
 default:grass_4 86 130 45
 default:grass_5 83 124 47
-default:gravel 86 86 85
+default:gravel 131 131 131
 default:ice 167 206 247
 default:junglegrass 63 105 25
 default:jungleleaves 20 28 15
 default:junglesapling 48 38 14
-default:jungletree 98 71 28
+default:jungletree 105 76 41
 default:junglewood 54 37 11
-default:ladder 123 90 34
+default:ladder_steel 126 126 126
+default:ladder_wood 123 90 34
 default:lava_flowing 255 100 0
 default:lava_source 255 100 0
 default:leaves 34 52 29
@@ -85,7 +90,8 @@ default:sand 214 207 158
 default:sandstone 197 193 143
 default:sandstonebrick 193 189 140
 default:sapling 65 59 40
-default:sign_wall 186 159 106
+default:sign_wall_steel 144 144 144
+default:sign_wall_wood 145 101 64
 default:snow 233 235 255
 default:snowblock 233 235 255
 default:steelblock 194 194 194
@@ -104,24 +110,27 @@ default:water_source 39 66 106 128 224
 default:wood 128 99 55
 
 # doors
-doors:door_glass_b_1 192 192 227 64 16
-doors:door_glass_b_2 192 192 227 64 16
-doors:door_glass_t_1 192 192 227 64 16
-doors:door_glass_t_2 192 192 227 64 16
-doors:door_obsidian_glass_b_1 16 16 16 64 16
-doors:door_obsidian_glass_b_2 16 16 16 64 16
-doors:door_obsidian_glass_t_1 16 16 16 64 16
-doors:door_obsidian_glass_t_2 16 16 16 64 16
-doors:door_steel_b_1 142 142 142
-doors:door_steel_b_2 142 142 142
-doors:door_steel_t_1 142 142 142
-doors:door_steel_t_2 142 142 142
-doors:door_wood_b_1 69 51 24
-doors:door_wood_b_2 69 51 24
-doors:door_wood_t_1 69 51 24
-doors:door_wood_t_2 69 51 24
+doors:door_glass_a 184 184 216 64 16
+doors:door_glass_b 184 184 216 64 16
+doors:door_obsidian_glass_a 27 28 29 64 16
+doors:door_obsidian_glass_b 27 28 29 64 16
+doors:door_steel_a 201 201 201
+doors:door_steel_b 201 201 201
+doors:door_wood_a 87 67 35
+doors:door_wood_b 87 67 35
+doors:gate_acacia_wood_closed 146 60 37
+doors:gate_acacia_wood_open 146 60 37
+doors:gate_aspen_wood_closed 209 198 169
+doors:gate_aspen_wood_open 209 198 169
+doors:gate_junglewood_closed 54 37 11
+doors:gate_junglewood_open 54 37 11
+doors:gate_pine_wood_closed 221 184 128
+doors:gate_pine_wood_open 221 184 128
+doors:gate_wood_closed 128 99 55
+doors:gate_wood_open 128 99 55
+doors:hidden 0 0 0
 doors:trapdoor 128 99 50
-doors:trapdoor_open 139 109 63
+doors:trapdoor_open 225 217 206
 doors:trapdoor_steel 199 199 199
 doors:trapdoor_steel_open 206 206 206
 
@@ -172,7 +181,7 @@ stairs:slab_brick 117 71 69
 stairs:slab_bronzeblock 185 110 15
 stairs:slab_cobble 88 84 82
 stairs:slab_copperblock 192 126 63
-stairs:slab_desert_cobble 154 98 80
+stairs:slab_desert_cobble 146 95 76
 stairs:slab_desert_stone 129 79 60
 stairs:slab_desert_stonebrick 125 76 58
 stairs:slab_goldblock 230 201 29
@@ -193,7 +202,7 @@ stairs:stair_brick 117 71 69
 stairs:stair_bronzeblock 185 110 15
 stairs:stair_cobble 88 84 82
 stairs:stair_copperblock 192 126 63
-stairs:stair_desert_cobble 154 98 80
+stairs:stair_desert_cobble 146 95 76
 stairs:stair_desert_stone 129 79 60
 stairs:stair_desert_stonebrick 125 76 58
 stairs:stair_goldblock 230 201 29
@@ -210,7 +219,6 @@ stairs:stair_straw 211 182 67
 stairs:stair_wood 128 99 55
 
 # tnt
-tnt:boom 255 105 17
 tnt:gunpowder 6 6 6
 tnt:gunpowder_burning 112 103 2
 tnt:tnt 181 0 0
@@ -221,6 +229,11 @@ vessels:drinking_glass 205 213 228
 vessels:glass_bottle 188 189 200
 vessels:shelf 128 99 55
 vessels:steel_bottle 181 179 177
+
+# walls
+walls:cobble 88 84 82
+walls:desertcobble 146 95 76
+walls:mossycobble 86 90 68
 
 # wool
 wool:black 29 29 29
