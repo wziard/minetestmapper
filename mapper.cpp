@@ -1,12 +1,3 @@
-/*
- * =====================================================================
- *        Version:  1.0
- *        Created:  22.08.2012 15:15:54
- *         Author:  Miroslav Bendík
- *        Company:  LinuxOS.sk
- * =====================================================================
- */
-
 #include <cstdlib>
 #include <getopt.h>
 #include <iostream>
@@ -15,8 +6,6 @@
 #include <sstream>
 #include <stdexcept>
 #include "TileGenerator.h"
-
-using namespace std;
 
 void usage()
 {
@@ -37,8 +26,15 @@ void usage()
 			"  --backend <backend>\n"
 			"  --geometry x:y+w+h\n"
 			"  --zoom <zoomlevel>\n"
+			"  --colors <colors.txt>\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
+}
+
+std::string search_colors()
+{
+	// TBD
+	return "colors.txt";
 }
 
 int main(int argc, char *argv[])
@@ -61,14 +57,15 @@ int main(int argc, char *argv[])
 		{"geometry", required_argument, 0, 'g'},
 		{"min-y", required_argument, 0, 'a'},
 		{"max-y", required_argument, 0, 'c'},
-		{"zoom", required_argument, 0, 'z'}
+		{"zoom", required_argument, 0, 'z'},
+		{"colors", required_argument, 0, 'C'},
 	};
 
-	string input;
-	string output;
+	std::string input;
+	std::string output;
+	std::string colors = "";
 
 	TileGenerator generator;
-	generator.parseColorsFile("colors.txt");
 	int option_index = 0;
 	int c = 0;
 	while (1) {
@@ -122,7 +119,7 @@ int main(int argc, char *argv[])
 				generator.setBackend(optarg);
 				break;
 			case 'a': {
-					istringstream iss;
+					std::istringstream iss;
 					iss.str(optarg);
 					int miny;
 					iss >> miny;
@@ -130,7 +127,7 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 'c': {
-					istringstream iss;
+					std::istringstream iss;
 					iss.str(optarg);
 					int maxy;
 					iss >> maxy;
@@ -138,7 +135,7 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 'g': {
-					istringstream geometry;
+					std::istringstream geometry;
 					geometry.str(optarg);
 					int x, y, w, h;
 					char c;
@@ -151,21 +148,27 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 'z': {
-					istringstream iss;
+					std::istringstream iss;
 					iss.str(optarg);
 					int zoom;
 					iss >> zoom;
 					generator.setZoom(zoom);
 				}
 				break;
+			case 'C':
+				colors = optarg;
+				break;
 			default:
 				exit(1);
 		}
 	}
+	if(colors == "")
+		colors = search_colors();
 	try {
+		generator.parseColorsFile(colors);
 		generator.generate(input, output);
 	} catch(std::runtime_error e) {
-		std::cout<<"Exception: "<<e.what()<<std::endl;
+		std::cerr << "Exception: " << e.what() << std::endl;
 		return 1;
 	}
 	return 0;

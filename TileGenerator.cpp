@@ -230,9 +230,8 @@ void TileGenerator::parseColorsFile(const std::string &fileName)
 {
 	ifstream in;
 	in.open(fileName.c_str(), ifstream::in);
-	if (!in.is_open()) {
-		return;
-	}
+	if (!in.is_open())
+		throw std::runtime_error("Specified colors file could not be found.");
 	parseColorsStream(in);
 }
 
