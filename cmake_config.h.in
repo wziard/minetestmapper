@@ -8,5 +8,7 @@
 
 #define USE_CXX11 @USE_CXX11@
 
+#define SHAREDIR "@SHAREDIR@"
+
 #endif
 

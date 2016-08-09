@@ -7,6 +7,7 @@ set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}")
 
+# Stuff & Paths
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build.")
@@ -23,7 +24,37 @@ endif(USE_CXX11)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall")
 
-# Find libgd
+if(WIN32)
+	set(SHAREDIR ".")
+	set(BINDIR ".")
+	set(DOCDIR ".")
+else()
+	set(SHAREDIR "${CMAKE_INSTALL_PREFIX}/share/minetest") # an extra dir. for just one file doesn't seem useful
+	set(BINDIR "${CMAKE_INSTALL_PREFIX}/bin")
+	set(DOCDIR "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}")
+endif()
+
+set(CUSTOM_SHAREDIR "" CACHE STRING "Directory to install data files into")
+if(NOT CUSTOM_SHAREDIR STREQUAL "")
+        set(SHAREDIR "${CUSTOM_SHAREDIR}")
+        message(STATUS "Using SHAREDIR=${SHAREDIR}")
+endif()
+
+set(CUSTOM_BINDIR "" CACHE STRING "Directory to install binaries into")
+if(NOT CUSTOM_BINDIR STREQUAL "")
+        set(BINDIR "${CUSTOM_BINDIR}")
+        message(STATUS "Using BINDIR=${BINDIR}")
+endif()
+
+set(CUSTOM_DOCDIR "" CACHE STRING "Directory to install documentation into")
+if(NOT CUSTOM_DOCDIR STREQUAL "")
+        set(DOCDIR "${CUSTOM_DOCDIR}")
+        message(STATUS "Using DOCDIR=${DOCDIR}")
+endif()
+
+
+# Libraries: gd
+
 find_library(LIBGD_LIBRARY gd)
 find_path(LIBGD_INCLUDE_DIR gd.h)
 message (STATUS "libgd library: ${LIBGD_LIBRARY}")
@@ -32,7 +63,8 @@ if(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
 	message(FATAL_ERROR "libgd not found!")
 endif(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
 
-# Find zlib
+# Libraries: zlib
+
 find_library(ZLIB_LIBRARY z)
 find_path(ZLIB_INCLUDE_DIR zlib.h)
 message (STATUS "zlib library: ${ZLIB_LIBRARY}")
@@ -44,7 +76,8 @@ endif(NOT ZLIB_LIBRARY OR NOT ZLIB_INCLUDE_DIR)
 find_package(PkgConfig)
 include(FindPackageHandleStandardArgs)
 
-# Find libsqlite3
+# Libraries: sqlite3
+
 find_library(SQLITE3_LIBRARY sqlite3)
 find_path(SQLITE3_INCLUDE_DIR zlib.h)
 message (STATUS "sqlite3 library: ${SQLITE3_LIBRARY}")
@@ -53,7 +86,8 @@ if(NOT SQLITE3_LIBRARY OR NOT SQLITE3_INCLUDE_DIR)
 	message(FATAL_ERROR "sqlite3 not found!")
 endif(NOT SQLITE3_LIBRARY OR NOT SQLITE3_INCLUDE_DIR)
 
-# Find leveldb
+# Libraries: leveldb
+
 set(USE_LEVELDB 0)
 
 OPTION(ENABLE_LEVELDB "Enable LevelDB backend")
@@ -73,7 +107,8 @@ if(ENABLE_LEVELDB)
 	endif(LEVELDB_LIBRARY AND LEVELDB_INCLUDE_DIR)
 endif(ENABLE_LEVELDB)
 
-# Find redis
+# Libraries: redis
+
 set(USE_REDIS 0)
 
 OPTION(ENABLE_REDIS "Enable redis backend")
@@ -92,6 +127,8 @@ if(ENABLE_REDIS)
 		message(STATUS "redis not found!")
 	endif(REDIS_LIBRARY AND REDIS_INCLUDE_DIR)
 endif(ENABLE_REDIS)
+
+# Compiling & Linking
 
 include_directories(
 	"${PROJECT_BINARY_DIR}"
@@ -139,12 +176,13 @@ target_link_libraries(
 	${ZLIB_LIBRARY}
 )
 
-install(FILES "AUTHORS" DESTINATION ".")
-install(FILES "COPYING" DESTINATION ".")
-install(FILES "README.rst" DESTINATION ".")
-install(FILES "colors.txt" DESTINATION ".")
+# Installing & Packaging
 
-# CPack
+install(TARGETS "${PROJECT_NAME}" DESTINATION "${BINDIR}")
+install(FILES "AUTHORS" DESTINATION "${DOCDIR}")
+install(FILES "COPYING" DESTINATION "${DOCDIR}")
+install(FILES "README.rst" DESTINATION "${DOCDIR}")
+install(FILES "colors.txt" DESTINATION "${SHAREDIR}")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Overview mapper for Minetest")
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
@@ -153,11 +191,9 @@ set(CPACK_PACKAGE_VENDOR "celeron55")
 set(CPACK_PACKAGE_CONTACT "Perttu Ahola <celeron55@gmail.com>")
 
 if(WIN32)
-	install(FILES "${PROJECT_BINARY_DIR}/minetestmapper.exe" DESTINATION ".")
 	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-win32")
 	set(CPACK_GENERATOR ZIP)
 else()
-	install(FILES "${PROJECT_BINARY_DIR}/minetestmapper" DESTINATION ".")
 	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION_STRING}-linux")
 	set(CPACK_GENERATOR TGZ)
 	set(CPACK_SOURCE_GENERATOR TGZ)

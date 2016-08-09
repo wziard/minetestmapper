@@ -1,10 +1,12 @@
 #include <cstdlib>
 #include <getopt.h>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#include "cmake_config.h"
 #include "TileGenerator.h"
 
 void usage()
@@ -31,9 +33,30 @@ void usage()
 	std::cout << usage_text;
 }
 
-std::string search_colors()
+bool file_exists(const std::string &path)
 {
-	// TBD
+	std::ifstream ifs(path.c_str());
+	return ifs.is_open();
+}
+
+std::string search_colors(const std::string &worldpath)
+{
+	if(file_exists(worldpath + "/colors.txt"))
+		return worldpath + "/colors.txt";
+
+#ifndef _WIN32
+	char *home = std::getenv("HOME");
+	if(home) {
+		std::string check = ((std::string) home) + "/.minetest/colors.txt";
+		if(file_exists(check))
+			return check;
+	}
+#endif
+
+	if(!(SHAREDIR[0] == '.' || SHAREDIR[0] == '\0') && file_exists(SHAREDIR "/colors.txt"))
+		return SHAREDIR "/colors.txt";
+
+	std::cerr << "Warning: Falling back to using colors.txt from current directory." << std::endl;
 	return "colors.txt";
 }
 
@@ -163,7 +186,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	if(colors == "")
-		colors = search_colors();
+		colors = search_colors(input);
+	std::cerr << "is at " << colors << std::endl;
 	try {
 		generator.parseColorsFile(colors);
 		generator.generate(input, output);
