@@ -355,10 +355,17 @@ void TileGenerator::createImage()
 {
 	m_mapWidth = (m_xMax - m_xMin + 1) * 16;
 	m_mapHeight = (m_zMax - m_zMin + 1) * 16;
-	m_image = gdImageCreateTrueColor((m_mapWidth * m_zoom) + m_border, (m_mapHeight * m_zoom) + m_border);
+	int image_width, image_height;
+	image_width = (m_mapWidth * m_zoom) + m_border;
+	image_height = (m_mapHeight * m_zoom) + m_border;
+	if(image_width > 4096 || image_height > 4096)
+		std::cerr << "Warning: The width or height of the image to be created exceeds 4096 pixels!"
+			<< " (Dimensions: " << image_width << "x" << image_height << ")"
+			<< std::endl;
+	m_image = gdImageCreateTrueColor(image_width, image_height);
 	m_blockPixelAttributes.setWidth(m_mapWidth);
 	// Background
-	gdImageFilledRectangle(m_image, 0, 0, (m_mapWidth * m_zoom) + m_border - 1, (m_mapHeight * m_zoom) + m_border -1, color2int(m_bgColor));
+	gdImageFilledRectangle(m_image, 0, 0, image_width - 1, image_height - 1, color2int(m_bgColor));
 }
 
 void TileGenerator::renderMap()
