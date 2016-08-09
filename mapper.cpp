@@ -187,7 +187,6 @@ int main(int argc, char *argv[])
 	}
 	if(colors == "")
 		colors = search_colors(input);
-	std::cerr << "is at " << colors << std::endl;
 	try {
 		generator.parseColorsFile(colors);
 		generator.generate(input, output);
