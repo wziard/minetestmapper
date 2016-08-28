@@ -84,3 +84,5 @@ geometry:
 zoom:
     "Zoom" the image by using more than one pixel per node, e.g. ``--zoom 4``
 
+colors:
+    Forcefully set path to colors.txt file (it's autodetected otherwise), e.g. ``--colors ../minetest/mycolors.txt``
