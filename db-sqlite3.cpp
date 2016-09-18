@@ -62,8 +62,8 @@ void DBSQLite3::getBlocksOnZ(std::map<int16_t, BlockList> &blocks, int16_t zPos)
 	int result;
 
 	// Magic numbers!
-	int64_t minPos = (zPos * 0x1000000) - 0x800000;
-	int64_t maxPos = (zPos * 0x1000000) + 0x7FFFFF;
+	int64_t minPos = encodeBlockPos(BlockPos(0, -2048, zPos));
+	int64_t maxPos = encodeBlockPos(BlockPos(0, 2048, zPos)) - 1;
 
 	SQLOK(bind_int64(stmt_get_blocks_z, 1, minPos));
 	SQLOK(bind_int64(stmt_get_blocks_z, 2, maxPos));

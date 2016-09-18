@@ -16,6 +16,8 @@ public:
 	int16_t y;
 	int16_t z;
 
+	BlockPos() : x(0), y(0), z(0) {}
+	BlockPos(int16_t x, int16_t y, int16_t z) : x(x), y(y), z(z) {}
 	bool operator < (const BlockPos &p) const
 	{
 		if (z > p.z) {
