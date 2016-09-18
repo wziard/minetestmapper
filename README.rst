@@ -79,7 +79,7 @@ backend:
     Use specific map backend, supported: *sqlite3*, *leveldb*, *redis*, e.g. ``--backend leveldb``
 
 geometry:
-    Limit area to specific geometry, e.g. ``--geometry -800:-800+1600+1600``
+    Limit area to specific geometry (*x:y+w+h* where x and y specify the lower left corner), e.g. ``--geometry -800:-800+1600+1600``
 
 zoom:
     "Zoom" the image by using more than one pixel per node, e.g. ``--zoom 4``
