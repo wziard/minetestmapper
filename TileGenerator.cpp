@@ -441,6 +441,7 @@ void TileGenerator::renderMap()
 
 				m_blockAirId = -1;
 				m_blockIgnoreId = -1;
+				m_nameMap.clear();
 				// Read mapping
 				if (version >= 22) {
 					dataOffset++; // mapping version
@@ -463,6 +464,9 @@ void TileGenerator::renderMap()
 						}
 						dataOffset += nameLen;
 					}
+					// Skip block if made of only air or ignore nodes
+					if (m_nameMap.empty())
+						continue;
 				}
 
 				// Node timers
@@ -518,12 +522,14 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 			for (int y = maxY; y >= minY; --y) {
 				int position = x + (y << 4) + (z << 8);
 				int content = readBlockContent(mapData, version, position);
-				if (content == m_blockIgnoreId || content == m_blockAirId) {
+				if (content == m_blockAirId || content == m_blockIgnoreId) {
 					continue;
 				}
 				NameMap::iterator blockName = m_nameMap.find(content);
-				if (blockName == m_nameMap.end())
+				if (blockName == m_nameMap.end()) {
+					std::cerr << "Skipping node with invalid ID." << std::endl;
 					continue;
+				}
 				const string &name = blockName->second;
 				ColorMap::const_iterator color = m_colorMap.find(name);
 				if (color != m_colorMap.end()) {
