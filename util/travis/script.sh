@@ -9,7 +9,7 @@ mkdir -p travisbuild
 cd travisbuild
 
 cmake \
-	-DENABLE_LEVELDB=1 -DUSE_CXX11=$CXX11 \
+	-DENABLE_LEVELDB=1 \
 	-DLEVELDB_LIBRARY=../libleveldb/lib/libleveldb.so \
 	-DLEVELDB_INCLUDE_DIR=../libleveldb/include \
 	..

@@ -2,9 +2,6 @@ language: cpp
 compiler:
   - gcc
   - clang
-env:
-  - CXX11=1
-  - CXX11=0
 sudo: false
 addons:
   apt:

@@ -13,14 +13,6 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build.")
 endif()
 
-option(USE_CXX11 "Use C++11" FALSE)
-if(USE_CXX11)
-	set(CMAKE_CXX_FLAGS "-std=c++11")
-	set(USE_CXX11 1) # We use this in config.h, it needs to be a valid value
-else(USE_CXX11)
-	set(USE_CXX11 0)
-endif(USE_CXX11)
-
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall")
 

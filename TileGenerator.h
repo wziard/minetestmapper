@@ -5,7 +5,7 @@
 #include <iosfwd>
 #include <list>
 #include <config.h>
-#if USE_CXX11
+#if __cplusplus >= 201103L
 #include <unordered_map>
 #include <unordered_set>
 #else
@@ -43,7 +43,7 @@ struct ColorEntry {
 class TileGenerator
 {
 private:
-#if USE_CXX11
+#if __cplusplus >= 201103L
 	typedef std::unordered_map<std::string, ColorEntry> ColorMap;
 	typedef std::unordered_map<int, std::string> NameMap;
 	typedef std::unordered_set<std::string> NameSet;
