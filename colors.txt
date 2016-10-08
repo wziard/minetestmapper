@@ -5,7 +5,7 @@ beds:fancy_bed_bottom 135 23 14
 beds:fancy_bed_top 172 112 103
 
 # bones
-bones:bones 101 101 101
+bones:bones 86 86 86
 
 # default
 default:acacia_leaves 108 147 67
@@ -31,13 +31,14 @@ default:copperblock 192 126 63
 default:desert_cobble 146 95 76
 default:desert_sand 206 165 98
 default:desert_stone 129 79 60
-default:desert_stonebrick 125 76 58
+default:desert_stone_block 130 79 60
+default:desert_stonebrick 129 79 60
 default:diamondblock 135 217 223
 default:dirt 95 64 39
 default:dirt_with_dry_grass 187 148 77
 default:dirt_with_grass 66 112 31
 default:dirt_with_grass_footsteps 66 112 31
-default:dirt_with_snow 233 235 255
+default:dirt_with_snow 223 224 236
 default:dry_grass_1 208 172 87
 default:dry_grass_2 210 174 87
 default:dry_grass_3 210 174 87
@@ -70,12 +71,11 @@ default:ladder_wood 123 90 34
 default:lava_flowing 255 100 0
 default:lava_source 255 100 0
 default:leaves 34 52 29
-default:mese 225 227 1
+default:mese 220 220 0
 default:meselamp 211 213 139
 default:mossycobble 86 90 68
-default:nyancat 198 111 167
-default:nyancat_rainbow 123 100 94
 default:obsidian 19 21 24
+default:obsidian_block 20 22 25
 default:obsidian_glass 19 21 23 64 16
 default:obsidianbrick 20 22 24
 default:papyrus 94 132 33
@@ -88,21 +88,24 @@ default:river_water_flowing 39 66 106 128 224
 default:river_water_source 39 66 106 128 224
 default:sand 214 207 158
 default:sandstone 197 193 143
+default:sandstone_block 195 190 141
 default:sandstonebrick 193 189 140
 default:sapling 65 59 40
 default:sign_wall_steel 144 144 144
 default:sign_wall_wood 145 101 64
-default:snow 233 235 255
-default:snowblock 233 235 255
+default:silver_sand 193 191 179
+default:snow 223 224 236
+default:snowblock 223 224 236
 default:steelblock 194 194 194
 default:stone 97 94 93
+default:stone_block 99 96 95
 default:stone_with_coal 97 94 93
 default:stone_with_copper 97 94 93
 default:stone_with_diamond 97 94 93
 default:stone_with_gold 97 94 93
 default:stone_with_iron 97 94 93
 default:stone_with_mese 97 94 93
-default:stonebrick 97 94 93
+default:stonebrick 99 96 95
 default:torch 120 98 67
 default:tree 164 131 88
 default:water_flowing 39 66 106 128 224
@@ -174,6 +177,10 @@ flowers:tulip 130 99 36
 flowers:viola 106 60 159
 flowers:waterlily 102 158 61
 
+# nyancat
+nyancat:nyancat 198 111 167
+nyancat:nyancat_rainbow 123 100 94
+
 # stairs
 stairs:slab_acacia_wood 146 60 37
 stairs:slab_aspen_wood 209 198 169
@@ -183,17 +190,22 @@ stairs:slab_cobble 88 84 82
 stairs:slab_copperblock 192 126 63
 stairs:slab_desert_cobble 146 95 76
 stairs:slab_desert_stone 129 79 60
-stairs:slab_desert_stonebrick 125 76 58
+stairs:slab_desert_stone_block 130 79 60
+stairs:slab_desert_stonebrick 129 79 60
 stairs:slab_goldblock 230 201 29
 stairs:slab_junglewood 54 37 11
+stairs:slab_mossycobble 86 90 68
 stairs:slab_obsidian 19 21 24
+stairs:slab_obsidian_block 20 22 25
 stairs:slab_obsidianbrick 20 22 24
 stairs:slab_pine_wood 221 184 128
 stairs:slab_sandstone 197 193 143
+stairs:slab_sandstone_block 195 190 141
 stairs:slab_sandstonebrick 193 189 140
 stairs:slab_steelblock 194 194 194
 stairs:slab_stone 97 94 93
-stairs:slab_stonebrick 97 94 93
+stairs:slab_stone_block 99 96 95
+stairs:slab_stonebrick 99 96 95
 stairs:slab_straw 211 182 67
 stairs:slab_wood 128 99 55
 stairs:stair_acacia_wood 146 60 37
@@ -204,17 +216,22 @@ stairs:stair_cobble 88 84 82
 stairs:stair_copperblock 192 126 63
 stairs:stair_desert_cobble 146 95 76
 stairs:stair_desert_stone 129 79 60
-stairs:stair_desert_stonebrick 125 76 58
+stairs:stair_desert_stone_block 130 79 60
+stairs:stair_desert_stonebrick 129 79 60
 stairs:stair_goldblock 230 201 29
 stairs:stair_junglewood 54 37 11
+stairs:stair_mossycobble 86 90 68
 stairs:stair_obsidian 19 21 24
+stairs:stair_obsidian_block 20 22 25
 stairs:stair_obsidianbrick 20 22 24
 stairs:stair_pine_wood 221 184 128
 stairs:stair_sandstone 197 193 143
+stairs:stair_sandstone_block 195 190 141
 stairs:stair_sandstonebrick 193 189 140
 stairs:stair_steelblock 194 194 194
 stairs:stair_stone 97 94 93
-stairs:stair_stonebrick 97 94 93
+stairs:stair_stone_block 99 96 95
+stairs:stair_stonebrick 99 96 95
 stairs:stair_straw 211 182 67
 stairs:stair_wood 128 99 55
 
@@ -225,10 +242,10 @@ tnt:tnt 181 0 0
 tnt:tnt_burning 190 8 0
 
 # vessels
-vessels:drinking_glass 205 213 228
-vessels:glass_bottle 188 189 200
+vessels:drinking_glass 206 214 228
+vessels:glass_bottle 188 190 201
 vessels:shelf 128 99 55
-vessels:steel_bottle 181 179 177
+vessels:steel_bottle 193 192 191
 
 # walls
 walls:cobble 88 84 82
@@ -253,34 +270,8 @@ wool:white 220 220 220
 wool:yellow 254 225 15
 
 # xpanes
-xpanes:bar_1 194 194 227 64 16
-xpanes:bar_10 194 194 227 64 16
-xpanes:bar_11 194 194 227 64 16
-xpanes:bar_12 194 194 227 64 16
-xpanes:bar_13 194 194 227 64 16
-xpanes:bar_14 194 194 227 64 16
-xpanes:bar_15 194 194 227 64 16
-xpanes:bar_2 194 194 227 64 16
-xpanes:bar_3 194 194 227 64 16
-xpanes:bar_4 194 194 227 64 16
-xpanes:bar_5 194 194 227 64 16
-xpanes:bar_6 194 194 227 64 16
-xpanes:bar_7 194 194 227 64 16
-xpanes:bar_8 194 194 227 64 16
-xpanes:bar_9 194 194 227 64 16
-xpanes:pane_1 194 194 227 64 16
-xpanes:pane_10 194 194 227 64 16
-xpanes:pane_11 194 194 227 64 16
-xpanes:pane_12 194 194 227 64 16
-xpanes:pane_13 194 194 227 64 16
-xpanes:pane_14 194 194 227 64 16
-xpanes:pane_15 194 194 227 64 16
-xpanes:pane_2 194 194 227 64 16
-xpanes:pane_3 194 194 227 64 16
-xpanes:pane_4 194 194 227 64 16
-xpanes:pane_5 194 194 227 64 16
-xpanes:pane_6 194 194 227 64 16
-xpanes:pane_7 194 194 227 64 16
-xpanes:pane_8 194 194 227 64 16
-xpanes:pane_9 194 194 227 64 16
+xpanes:bar 194 194 227 64 16
+xpanes:bar_flat 194 194 227 64 16
+xpanes:pane 194 194 227 64 16
+xpanes:pane_flat 194 194 227 64 16
 

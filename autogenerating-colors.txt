@@ -104,24 +104,29 @@ MTGAME_PATH=/path/to/minetest_game
 NODESTXT_PATH=./nodes.txt
 COLORSTXT_PATH=./colors.txt
 
-while read -r p; do
-	set -- junk $p
+while read -r line; do
+	set -- junk $line
 	shift
-	if [[ ! $1 == "#" && ! $1 == "" ]]; then
-		echo $1 `python $AVGCOLOR_PATH $(find $MTGAME_PATH -type f -name $2)`
-		echo $1 1>&2
-	else
-		echo "$p"
+	if [[ -z "$1" || $1 == "#" ]]; then
+		echo $line
+		continue
 	fi
+	tex=$(find $MTGAME_PATH -type f -name "$2")
+	if [ -z "$tex" ]; then
+		echo "skip $1: texture not found" >&2
+		continue
+	fi
+	echo $1 $(python $AVGCOLOR_PATH "$tex")
+	echo "ok $1" >&2
 done < $NODESTXT_PATH > $COLORSTXT_PATH
 # Use nicer colors for water and lava:
-sed -re 's/^default:(river_)?water_([^ ]+) [0-9 ]+$/default:\1water_\2 39 66 106 128 224/g' $COLORSTXT_PATH -i
-sed -re 's/^default:lava_([^ ]+) [0-9 ]+$/default:lava_\1 255 100 0/g' $COLORSTXT_PATH -i
+sed -re 's/^default:((river_)?water_(flowing|source)) [0-9 ]+$/default:\1 39 66 106 128 224/g' $COLORSTXT_PATH -i
+sed -re 's/^default:(lava_(flowing|source)) [0-9 ]+$/default:\1 255 100 0/g' $COLORSTXT_PATH -i
 # Add transparency to glass nodes:
 sed -re 's/^default:(.*glass) ([0-9 ]+)$/default:\1 \2 64 16/g' $COLORSTXT_PATH -i
 sed -re 's/^doors:(.*glass[^ ]*) ([0-9 ]+)$/doors:\1 \2 64 16/g' $COLORSTXT_PATH -i
 # Fix xpanes color:
-sed -re 's/^xpanes:(pane_[0-9]+|bar_[0-9]+) [0-9 ]+$/xpanes:\1 194 194 227 64 16/g' $COLORSTXT_PATH -i
+sed -re 's/^xpanes:((pane|bar)(_flat)?) [0-9 ]+$/xpanes:\1 194 194 227 64 16/g' $COLORSTXT_PATH -i
 ==INSTRUCTIONS==
 1) Make sure avgcolors.py outputs the usage instructions
 2) Add the dumpnodes mod to Minetest
