@@ -264,28 +264,19 @@ void TileGenerator::parseColorsStream(std::istream &in)
 	char line[128], *p;
 	while (in.good()) {
 		in.getline(line, 128);
-		p = line;
-		while(*p++ != '\0')
-			if(*p == '#') {
-				*p = '\0'; // Cut off at the first #
-				break;
-			}
+		while(*p++ != '\0') {
+			if(*p != '#')
+				continue;
+			*p = '\0'; // Cut off at the first #
+			break;
+		}
 
-		char name[75];
-#ifdef __MINGW32__
-		// MinGW's sscanf doesn't support %hhu
+		char name[64];
 		unsigned int r, g, b, a, t;
-#else
-		uint8_t r, g, b, a, t;
-#endif
 		a = 255;
 		t = 0;
 
-#ifdef __MINGW32__
-		sscanf(line, "%75s %u %u %u %u %u", name, &r, &g, &b, &a, &t);
-#else
-		sscanf(line, "%75s %hhu %hhu %hhu %hhu %hhu", name, &r, &g, &b, &a, &t);
-#endif
+		sscanf(line, "%64s %u %u %u %u %u", name, &r, &g, &b, &a, &t);
 		if(strlen(name) == 0)
 			break;
 		ColorEntry color = ColorEntry(r, g, b, a, t);
