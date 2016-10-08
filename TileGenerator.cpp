@@ -261,24 +261,29 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 void TileGenerator::parseColorsStream(std::istream &in)
 {
-	char line[128], *p;
+	char line[128];
 	while (in.good()) {
 		in.getline(line, 128);
-		while(*p++ != '\0') {
+
+		for(char *p = line; *p; p++) {
 			if(*p != '#')
 				continue;
 			*p = '\0'; // Cut off at the first #
 			break;
 		}
+		if(strlen(line) == 0)
+			continue;
 
 		char name[64];
 		unsigned int r, g, b, a, t;
 		a = 255;
 		t = 0;
-
-		sscanf(line, "%64s %u %u %u %u %u", name, &r, &g, &b, &a, &t);
-		if(strlen(name) == 0)
-			break;
+		int items = sscanf(line, "%64s %u %u %u %u %u", name, &r, &g, &b, &a, &t);
+		if(items < 4) {
+			std:cerr << "Failed to parse color entry '" << line << "'." << std::endl;
+			continue;
+		}
+	
 		ColorEntry color = ColorEntry(r, g, b, a, t);
 		m_colorMap[name] = color;
 	}
