@@ -280,7 +280,7 @@ void TileGenerator::parseColorsStream(std::istream &in)
 		t = 0;
 		int items = sscanf(line, "%64s %u %u %u %u %u", name, &r, &g, &b, &a, &t);
 		if(items < 4) {
-			std:cerr << "Failed to parse color entry '" << line << "'." << std::endl;
+			std::cerr << "Failed to parse color entry '" << line << "'" << std::endl;
 			continue;
 		}
 	
