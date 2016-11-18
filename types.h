@@ -2,4 +2,4 @@
 
 typedef std::basic_string<unsigned char> ustring;
 typedef unsigned int uint;
-typedef uint8_t u8;
+typedef unsigned char u8;
