@@ -142,6 +142,7 @@ set(mapper_SRCS
 	PlayerAttributes.cpp
 	TileGenerator.cpp
 	ZlibDecompressor.cpp
+	Image.cpp
 	mapper.cpp
 	util.cpp
 	db-sqlite3.cpp

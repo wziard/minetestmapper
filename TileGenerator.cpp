@@ -2,11 +2,9 @@
 #include <cstdlib>
 #include <climits>
 #include <fstream>
-#include <gdfontmb.h>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <cerrno>
 #include <cstring>
 #include <vector>
 #include "config.h"
@@ -27,16 +25,6 @@ using namespace std;
 static inline uint16_t readU16(const unsigned char *data)
 {
 	return data[0] << 8 | data[1];
-}
-
-static inline int rgb2int(uint8_t r, uint8_t g, uint8_t b, uint8_t a=0xFF)
-{
-	return (a << 24) + (r << 16) + (g << 8) + b;
-}
-
-static inline int color2int(Color c)
-{
-	return rgb2int(c.r, c.g, c.b, c.a);
 }
 
 // rounds n (away from 0) to a multiple of f while preserving the sign of n
@@ -377,10 +365,9 @@ void TileGenerator::createImage()
 		std::cerr << "Warning: The width or height of the image to be created exceeds 4096 pixels!"
 			<< " (Dimensions: " << image_width << "x" << image_height << ")"
 			<< std::endl;
-	m_image = gdImageCreateTrueColor(image_width, image_height);
+	m_image = new Image(image_width, image_height);
 	m_blockPixelAttributes.setWidth(m_mapWidth);
-	// Background
-	gdImageFilledRectangle(m_image, 0, 0, image_width - 1, image_height - 1, color2int(m_bgColor));
+	m_image->drawFilledRect(0, 0, image_width, image_height, m_bgColor); // Background
 }
 
 void TileGenerator::renderMap()
@@ -560,7 +547,7 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 						else
 							m_color[z][x] = mixColors(m_color[z][x], c);
 						if(m_color[z][x].a == 0xFF) {
-							setZoomed(m_image,imageY,imageX,color2int(m_color[z][x]));
+							setZoomed(imageX, imageY, m_color[z][x]);
 							m_readPixels[z] |= (1 << x);
 							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 						} else {
@@ -568,7 +555,7 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 							continue;
 						}
 					} else {
-						setZoomed(m_image,imageY,imageX,color2int(c));
+						setZoomed(imageX, imageY, c);
 						m_readPixels[z] |= (1 << x);
 					}
 					if(!(m_readInfo[z] & (1 << x))) {
@@ -598,7 +585,7 @@ inline void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
 			int imageX = xBegin + x;
 
 			if (m_drawAlpha) {
-				setZoomed(m_image,imageY,imageX, color2int(m_color[z][x]));
+				setZoomed(imageX, imageY, m_color[z][x]);
 				m_readPixels[z] |= (1 << x);
 				m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 			}
@@ -628,14 +615,11 @@ inline void TileGenerator::renderShading(int zPos)
 			// more thickness -> less visible shadows: t=0 -> 100% visible, t=255 -> 0% visible
 			if (m_drawAlpha)
 				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thickness) / 255.0);
-			int sourceColor = m_image->tpixels[getImageY(imageY)][getImageX(x)] & 0xffffff;
-			uint8_t r = (sourceColor & 0xff0000) >> 16;
-			uint8_t g = (sourceColor & 0x00ff00) >> 8;
-			uint8_t b = (sourceColor & 0x0000ff);
-			r = colorSafeBounds(r + d);
-			g = colorSafeBounds(g + d);
-			b = colorSafeBounds(b + d);
-			setZoomed(m_image,imageY,x, rgb2int(r, g, b));
+			Color c = m_image->getPixel(getImageX(x), getImageY(imageY));
+			c.r = colorSafeBounds(c.r + d);
+			c.g = colorSafeBounds(c.g + d);
+			c.b = colorSafeBounds(c.b + d);
+			setZoomed(x, imageY, c);
 		}
 	}
 	m_blockPixelAttributes.scroll();
@@ -643,33 +627,31 @@ inline void TileGenerator::renderShading(int zPos)
 
 void TileGenerator::renderScale()
 {
-	int color = color2int(m_scaleColor);
-
 	string scaleText;
 
 	if (m_scales & SCALE_TOP) {
-		gdImageString(m_image, gdFontGetMediumBold(), 24, 0, reinterpret_cast<unsigned char *>(const_cast<char *>("X")), color);
+		m_image->drawText(24, 0, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
 			stringstream buf;
 			buf << i * 16;
 			scaleText = buf.str();
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
-			gdImageString(m_image, gdFontGetMediumBold(), xPos + 2, 0, reinterpret_cast<unsigned char *>(const_cast<char *>(scaleText.c_str())), color);
-			gdImageLine(m_image, xPos, 0, xPos, m_yBorder - 1, color);
+			m_image->drawText(xPos + 2, 0, scaleText, m_scaleColor);
+			m_image->drawLine(xPos, 0, xPos, m_yBorder - 1, m_scaleColor);
 		}
 	}
 
 	if (m_scales & SCALE_LEFT) {
-		gdImageString(m_image, gdFontGetMediumBold(), 2, 24, reinterpret_cast<unsigned char *>(const_cast<char *>("Z")), color);
+		m_image->drawText(2, 24, "Z", m_scaleColor);
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
 			stringstream buf;
 			buf << i * 16;
 			scaleText = buf.str();
 
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			gdImageString(m_image, gdFontGetMediumBold(), 2, yPos, reinterpret_cast<unsigned char *>(const_cast<char *>(scaleText.c_str())), color);
-			gdImageLine(m_image, 0, yPos, m_xBorder - 1, yPos, color);
+			m_image->drawText(2, yPos, scaleText, m_scaleColor);
+			m_image->drawLine(0, yPos, m_xBorder - 1, yPos, m_scaleColor);
 		}
 	}
 
@@ -680,9 +662,9 @@ void TileGenerator::renderScale()
 			scaleText = buf.str();
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
-			int yPos = m_yBorder + m_mapHeight;
-			gdImageString(m_image, gdFontGetMediumBold(), xPos + 2, yPos, reinterpret_cast<unsigned char *>(const_cast<char *>(scaleText.c_str())), color);
-			gdImageLine(m_image, xPos, yPos, xPos, yPos + 39, color);
+			int yPos = m_yBorder + m_mapHeight*m_zoom;
+			m_image->drawText(xPos + 2, yPos, scaleText, m_scaleColor);
+			m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
 		}
 	}
 
@@ -692,10 +674,10 @@ void TileGenerator::renderScale()
 			buf << i * 16;
 			scaleText = buf.str();
 
-			int xPos = m_xBorder + m_mapWidth;
+			int xPos = m_xBorder + m_mapWidth*m_zoom;
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			gdImageString(m_image, gdFontGetMediumBold(), xPos + 2, yPos, reinterpret_cast<unsigned char *>(const_cast<char *>(scaleText.c_str())), color);
-			gdImageLine(m_image, xPos, yPos, xPos + 39, yPos, color);
+			m_image->drawText(xPos + 2, yPos, scaleText, m_scaleColor);
+			m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
 		}
 	}
 }
@@ -704,20 +686,18 @@ void TileGenerator::renderOrigin()
 {
 	int imageX = (-m_xMin * 16)*m_zoom + m_xBorder;
 	int imageY = (m_mapHeight - m_zMin * -16)*m_zoom + m_yBorder;
-	gdImageArc(m_image, imageX, imageY, 12, 12, 0, 360, color2int(m_originColor));
+	m_image->drawCircle(imageX, imageY, 12, m_originColor);
 }
 
 void TileGenerator::renderPlayers(const std::string &inputPath)
 {
-	int color = color2int(m_playerColor);
-
 	PlayerAttributes players(inputPath);
 	for (PlayerAttributes::Players::iterator player = players.begin(); player != players.end(); ++player) {
 		int imageX = (player->x / 10 - m_xMin * 16)*m_zoom + m_xBorder;
 		int imageY = (m_mapHeight - (player->z / 10 - m_zMin * 16))*m_zoom + m_yBorder;
 
-		gdImageArc(m_image, imageX, imageY, 5, 5, 0, 360, color);
-		gdImageString(m_image, gdFontGetMediumBold(), imageX + 2, imageY + 2, reinterpret_cast<unsigned char *>(const_cast<char *>(player->name.c_str())), color);
+		m_image->drawCircle(imageX, imageY, 5, m_playerColor);
+		m_image->drawText(imageX + 2, imageY + 2, player->name, m_playerColor);
 	}
 }
 
@@ -735,16 +715,9 @@ inline std::list<int> TileGenerator::getZValueList() const
 
 void TileGenerator::writeImage(const std::string &output)
 {
-	FILE *out;
-	out = fopen(output.c_str(), "wb");
-	if (!out) {
-		std::ostringstream oss;
-		oss << "Error opening '" << output.c_str() << "': " << std::strerror(errno);
-		throw std::runtime_error(oss.str());
-	}
-	gdImagePng(m_image, out);
-	fclose(out);
-	gdImageDestroy(m_image);
+	m_image->save(output);
+	delete m_image;
+	m_image = NULL;
 }
 
 void TileGenerator::printUnknown()
@@ -767,11 +740,6 @@ inline int TileGenerator::getImageY(int val) const
 	return (m_zoom*val) + m_yBorder;
 }
 
-inline void TileGenerator::setZoomed(gdImagePtr image, int y, int x, int color) {
-	int xx,yy;
-	for (xx = 0; xx < m_zoom; xx++) {
-		for (yy = 0; yy < m_zoom; yy++) {
-			image->tpixels[m_yBorder + (y*m_zoom) + xx][m_xBorder + (x*m_zoom) + yy] = color;
-		}
-	}
+inline void TileGenerator::setZoomed(int x, int y, Color color) {
+	m_image->drawFilledRect(getImageX(x), getImageY(y), m_zoom, m_zoom, color);
 }

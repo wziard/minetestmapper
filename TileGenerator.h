@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <string>
 #include "PixelAttributes.h"
+#include "Image.h"
 #include "db.h"
 #include "types.h"
 
@@ -23,16 +24,6 @@ enum {
 	SCALE_BOTTOM = (1 << 1),
 	SCALE_LEFT = (1 << 2),
 	SCALE_RIGHT = (1 << 3),
-};
-
-struct Color {
-	Color(): r(0xFF), g(0xFF), b(0xFF), a(0) {};
-	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b), a(0) {};
-	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a): r(r), g(g), b(b), a(a) {};
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t a;
 };
 
 struct ColorEntry {
@@ -99,7 +90,7 @@ private:
 	void printUnknown();
 	int getImageX(int val) const;
 	int getImageY(int val) const;
-	void setZoomed(gdImagePtr image, int x, int y, int color);
+	void setZoomed(int x, int y, Color color);
 
 private:
 	Color m_bgColor;
@@ -115,7 +106,7 @@ private:
 	int m_xBorder, m_yBorder;
 
 	DB *m_db;
-	gdImagePtr m_image;
+	Image *m_image;
 	PixelAttributes m_blockPixelAttributes;
 	int m_xMin;
 	int m_xMax;
