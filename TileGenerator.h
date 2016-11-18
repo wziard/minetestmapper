@@ -18,6 +18,13 @@
 #include "db.h"
 #include "types.h"
 
+enum {
+	SCALE_TOP = (1 << 0),
+	SCALE_BOTTOM = (1 << 1),
+	SCALE_LEFT = (1 << 2),
+	SCALE_RIGHT = (1 << 3),
+};
+
 struct Color {
 	Color(): r(0xFF), g(0xFF), b(0xFF), a(0) {};
 	Color(uint8_t r, uint8_t g, uint8_t b): r(r), g(g), b(b), a(0) {};
@@ -72,6 +79,7 @@ public:
 	void setBackend(std::string backend);
 	void generate(const std::string &input, const std::string &output);
 	void setZoom(int zoom);
+	void setScales(uint flags);
 
 private:
 	void parseColorsStream(std::istream &in);
@@ -104,7 +112,7 @@ private:
 	bool m_drawAlpha;
 	bool m_shading;
 	std::string m_backend;
-	int m_border;
+	int m_xBorder, m_yBorder;
 
 	DB *m_db;
 	gdImagePtr m_image;
@@ -133,6 +141,7 @@ private:
 	int m_blockAirId;
 	int m_blockIgnoreId;
 	int m_zoom;
+	uint m_scales;
 }; // class TileGenerator
 
 #endif // TILEGENERATOR_HEADER

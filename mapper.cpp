@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <getopt.h>
 #include <fstream>
 #include <iostream>
@@ -29,6 +30,7 @@ void usage()
 			"  --geometry x:y+w+h\n"
 			"  --zoom <zoomlevel>\n"
 			"  --colors <colors.txt>\n"
+			"  --scales [t][b][l][r]\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
 }
@@ -82,6 +84,7 @@ int main(int argc, char *argv[])
 		{"max-y", required_argument, 0, 'c'},
 		{"zoom", required_argument, 0, 'z'},
 		{"colors", required_argument, 0, 'C'},
+		{"scales", required_argument, 0, 'f'},
 		{0, 0, 0, 0}
 	};
 
@@ -169,6 +172,19 @@ int main(int argc, char *argv[])
 						exit(1);
 					}
 					generator.setGeometry(x, y, w, h);
+				}
+				break;
+			case 'f': {
+					uint flags = 0;
+					if(strchr(optarg, 't') != NULL)
+						flags |= SCALE_TOP;
+					if(strchr(optarg, 'b') != NULL)
+						flags |= SCALE_BOTTOM;
+					if(strchr(optarg, 'l') != NULL)
+						flags |= SCALE_LEFT;
+					if(strchr(optarg, 'r') != NULL)
+						flags |= SCALE_RIGHT;
+					generator.setScales(flags);
 				}
 				break;
 			case 'z': {

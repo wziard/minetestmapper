@@ -86,3 +86,6 @@ zoom:
 
 colors:
     Forcefully set path to colors.txt file (it's autodetected otherwise), e.g. ``--colors ../minetest/mycolors.txt``
+
+scales:
+    Draw scales on specified image edges (letters *t b l r* meaning top, bottom, left and right), e.g. ``--scales tbr``
