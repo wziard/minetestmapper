@@ -20,7 +20,7 @@
 #define SIZECHECK(x, y) do {} while(0)
 #endif
 
-// BGRA but with inverted alpha
+// ARGB but with inverted alpha
 
 static inline int color2int(Color c)
 {

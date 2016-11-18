@@ -28,7 +28,7 @@ static inline uint16_t readU16(const unsigned char *data)
 }
 
 // rounds n (away from 0) to a multiple of f while preserving the sign of n
-static inline int round_multiple_nosign(int n, int f)
+static int round_multiple_nosign(int n, int f)
 {
 	int abs_n, sign;
 	abs_n = (n >= 0) ? n : -n;
@@ -39,41 +39,30 @@ static inline int round_multiple_nosign(int n, int f)
 		return sign * (abs_n + f - (abs_n % f));
 }
 
-static inline int readBlockContent(const unsigned char *mapData, int version, int datapos)
+static int readBlockContent(const unsigned char *mapData, int version, int datapos)
 {
 	if (version >= 24) {
 		size_t index = datapos << 1;
 		return (mapData[index] << 8) | mapData[index + 1];
-	}
-	else if (version >= 20) {
-		if (mapData[datapos] <= 0x80) {
+	} else if (version >= 20) {
+		if (mapData[datapos] <= 0x80)
 			return mapData[datapos];
-		}
-		else {
+		else
 			return (int(mapData[datapos]) << 4) | (int(mapData[datapos + 0x2000]) >> 4);
-		}
 	}
-	else {
-		std::ostringstream oss;
-		oss << "Unsupported map version " << version;
-		throw std::runtime_error(oss.str());
-	}
+	std::ostringstream oss;
+	oss << "Unsupported map version " << version;
+	throw std::runtime_error(oss.str());
 }
 
 static inline int colorSafeBounds(int color)
 {
-	if (color > 255) {
-		return 255;
-	}
-	else if (color < 0) {
-		return 0;
-	}
-	else {
-		return color;
-	}
+	color = (color > 255) ? 255 : color;
+	color = (color < 0) ? 0 : color;
+	return color;
 }
 
-static inline Color mixColors(Color a, Color b)
+static Color mixColors(Color a, Color b)
 {
 	Color result;
 	double a1 = a.a / 255.0;
@@ -83,6 +72,7 @@ static inline Color mixColors(Color a, Color b)
 	result.g = (int) (a1 * a.g + a2 * (1 - a1) * b.g);
 	result.b = (int) (a1 * a.b + a2 * (1 - a1) * b.b);
 	result.a = (int) (255 * (a1 + a2 * (1 - a1)));
+
 	return result;
 }
 
@@ -143,9 +133,8 @@ void TileGenerator::setPlayerColor(const std::string &playerColor)
 
 void TileGenerator::setZoom(int zoom)
 {
-	if (zoom < 1) {
+	if (zoom < 1)
 		throw std::runtime_error("Zoom level needs to be a number: 1 or higher");
-	}
 	m_zoom = zoom;
 }
 
@@ -157,18 +146,15 @@ void TileGenerator::setScales(uint flags)
 Color TileGenerator::parseColor(const std::string &color)
 {
 	Color parsed;
-	if (color.length() != 7) {
-		throw std::runtime_error("Color not 7 characters long");
-	}
-	if (color[0] != '#') {
-		throw std::runtime_error("Color does not begin with #");
-	}
-	long col = strtol(color.c_str() + 1, NULL, 16);
-	parsed.b = col % 256;
-	col = col / 256;
-	parsed.g = col % 256;
-	col = col / 256;
-	parsed.r = col % 256;
+	if (color.length() != 7)
+		throw std::runtime_error("Color needs to be 7 characters long");
+	if (color[0] != '#')
+		throw std::runtime_error("Color needs to begin with #");
+	unsigned long col = strtoul(color.c_str() + 1, NULL, 16);
+	parsed.b = col & 0xff;
+	parsed.g = (col >> 8) & 0xff;
+	parsed.r = (col >> 16) & 0xff;
+	parsed.a = 255;
 	return parsed;
 }
 
@@ -225,7 +211,7 @@ void TileGenerator::parseColorsFile(const std::string &fileName)
 	ifstream in;
 	in.open(fileName.c_str(), ifstream::in);
 	if (!in.is_open())
-		throw std::runtime_error("Specified colors file could not be found.");
+		throw std::runtime_error("Specified colors file could not be found");
 	parseColorsStream(in);
 }
 
@@ -321,26 +307,21 @@ void TileGenerator::loadBlocks()
 	for (std::vector<BlockPos>::iterator it = vec.begin(); it != vec.end(); ++it) {
 		BlockPos pos = *it;
 		// Check that it's in geometry (from --geometry option)
-		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2) {
+		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2)
 			continue;
-		}
-		// Check that it's between --miny and --maxy
-		if (pos.y * 16 < m_yMin || pos.y * 16 > m_yMax) {
+		// Check that it's between --min-y and --max-y
+		if (pos.y * 16 < m_yMin || pos.y * 16 > m_yMax)
 			continue;
-		}
 		// Adjust minimum and maximum positions to the nearest block
-		if (pos.x < m_xMin) {
+		if (pos.x < m_xMin)
 			m_xMin = pos.x;
-		}
-		if (pos.x > m_xMax) {
+		if (pos.x > m_xMax)
 			m_xMax = pos.x;
-		}
-		if (pos.z < m_zMin) {
+
+		if (pos.z < m_zMin)
 			m_zMin = pos.z;
-		}
-		if (pos.z > m_zMax) {
+		if (pos.z > m_zMax)
 			m_zMax = pos.z;
-		}
 		m_positions.push_back(std::pair<int, int>(pos.x, pos.z));
 	}
 	m_positions.sort();
@@ -355,18 +336,19 @@ void TileGenerator::createImage()
 		m_xBorder = (m_scales & SCALE_LEFT) ? 40 : 0;
 		m_yBorder = (m_scales & SCALE_TOP) ? 40 : 0;
 	}
+	m_blockPixelAttributes.setWidth(m_mapWidth);
 
 	int image_width, image_height;
 	image_width = (m_mapWidth * m_zoom) + m_xBorder;
 	image_width += m_drawScale && (m_scales & SCALE_RIGHT) ? 40 : 0;
 	image_height = (m_mapHeight * m_zoom) + m_yBorder;
 	image_height += m_drawScale && (m_scales & SCALE_BOTTOM) ? 40 : 0;
+
 	if(image_width > 4096 || image_height > 4096)
 		std::cerr << "Warning: The width or height of the image to be created exceeds 4096 pixels!"
 			<< " (Dimensions: " << image_width << "x" << image_height << ")"
 			<< std::endl;
 	m_image = new Image(image_width, image_height);
-	m_blockPixelAttributes.setWidth(m_mapWidth);
 	m_image->drawFilledRect(0, 0, image_width, image_height, m_bgColor); // Background
 }
 
@@ -378,9 +360,8 @@ void TileGenerator::renderMap()
 		std::map<int16_t, BlockList> blocks;
 		m_db->getBlocksOnZ(blocks, zPos);
 		for (std::list<std::pair<int, int> >::const_iterator position = m_positions.begin(); position != m_positions.end(); ++position) {
-			if (position->second != zPos) {
+			if (position->second != zPos)
 				continue;
-			}
 
 			for (int i = 0; i < 16; ++i) {
 				m_readPixels[i] = 0;
@@ -406,12 +387,10 @@ void TileGenerator::renderMap()
 				//uint8_t flags = data[1];
 
 				size_t dataOffset = 0;
-				if (version >= 22) {
+				if (version >= 22)
 					dataOffset = 4;
-				}
-				else {
+				else
 					dataOffset = 2;
-				}
 
 				ZlibDecompressor decompressor(data, length);
 				decompressor.setSeekPos(dataOffset);
@@ -420,12 +399,10 @@ void TileGenerator::renderMap()
 				dataOffset = decompressor.seekPos();
 
 				// Skip unused data
-				if (version <= 21) {
+				if (version <= 21)
 					dataOffset += 2;
-				}
-				if (version == 23) {
+				if (version == 23)
 					dataOffset += 1;
-				}
 				if (version == 24) {
 					uint8_t ver = data[dataOffset++];
 					if (ver == 1) {
@@ -460,15 +437,12 @@ void TileGenerator::renderMap()
 						uint16_t nameLen = readU16(data + dataOffset);
 						dataOffset += 2;
 						string name = string(reinterpret_cast<const char *>(data) + dataOffset, nameLen);
-						if (name == "air") {
+						if (name == "air")
 							m_blockAirId = nodeId;
-						}
-						else if (name == "ignore") {
+						else if (name == "ignore")
 							m_blockIgnoreId = nodeId;
-						}
-						else {
+						else
 							m_nameMap[nodeId] = name;
-						}
 						dataOffset += nameLen;
 					}
 					// Skip block if made of only air or ignore nodes
@@ -488,30 +462,26 @@ void TileGenerator::renderMap()
 
 				bool allRead = true;
 				for (int i = 0; i < 16; ++i) {
-					if (m_readPixels[i] != 0xffff) {
+					if (m_readPixels[i] != 0xffff)
 						allRead = false;
-					}
 				}
-				if (allRead) {
+				if (allRead)
 					break;
-				}
 			}
 			bool allRead = true;
 			for (int i = 0; i < 16; ++i) {
-				if (m_readPixels[i] != 0xffff) {
+				if (m_readPixels[i] != 0xffff)
 					allRead = false;
-				}
 			}
-			if (!allRead) {
+			if (!allRead)
 				renderMapBlockBottom(blockStack.begin()->first);
-			}
 		}
 		if(m_shading)
 			renderShading(zPos);
 	}
 }
 
-inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version)
+void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version)
 {
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
@@ -521,17 +491,15 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + 15 - z;
 		for (int x = 0; x < 16; ++x) {
-			if (m_readPixels[z] & (1 << x)) {
+			if (m_readPixels[z] & (1 << x))
 				continue;
-			}
 			int imageX = xBegin + x;
 
 			for (int y = maxY; y >= minY; --y) {
 				int position = x + (y << 4) + (z << 8);
 				int content = readBlockContent(mapData, version, position);
-				if (content == m_blockAirId || content == m_blockIgnoreId) {
+				if (content == m_blockAirId || content == m_blockIgnoreId)
 					continue;
-				}
 				NameMap::iterator blockName = m_nameMap.find(content);
 				if (blockName == m_nameMap.end()) {
 					std::cerr << "Skipping node with invalid ID." << std::endl;
@@ -542,15 +510,18 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 				if (color != m_colorMap.end()) {
 					const Color c = color->second.to_color();
 					if (m_drawAlpha) {
+						// mix with previous color (unless first visible time)
 						if (m_color[z][x].a == 0)
 							m_color[z][x] = c;
 						else
 							m_color[z][x] = mixColors(m_color[z][x], c);
-						if(m_color[z][x].a == 0xFF) {
+						if(m_color[z][x].a == 0xff) {
+							// color is opaque at this depth (no point continuing)
 							setZoomed(imageX, imageY, m_color[z][x]);
 							m_readPixels[z] |= (1 << x);
 							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 						} else {
+							// near thickness value to thickness of current node
 							m_thickness[z][x] = (m_thickness[z][x] + color->second.t) / 2.0;
 							continue;
 						}
@@ -572,19 +543,19 @@ inline void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPo
 	}
 }
 
-inline void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
+void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
 {
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + 15 - z;
 		for (int x = 0; x < 16; ++x) {
-			if (m_readPixels[z] & (1 << x)) {
+			if (m_readPixels[z] & (1 << x))
 				continue;
-			}
 			int imageX = xBegin + x;
 
 			if (m_drawAlpha) {
+				// set color in case it wasn't done in renderMapBlock()
 				setZoomed(imageX, imageY, m_color[z][x]);
 				m_readPixels[z] |= (1 << x);
 				m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
@@ -593,28 +564,32 @@ inline void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
 	}
 }
 
-inline void TileGenerator::renderShading(int zPos)
+void TileGenerator::renderShading(int zPos)
 {
 	int zBegin = (m_zMax - zPos) * 16;
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + z;
-		if (imageY >= m_mapHeight) {
+		if (imageY >= m_mapHeight)
 			continue;
-		}
 		for (int x = 0; x < m_mapWidth; ++x) {
-			if (!m_blockPixelAttributes.attribute(z, x).valid_height() || !m_blockPixelAttributes.attribute(z, x - 1).valid_height() || !m_blockPixelAttributes.attribute(z - 1, x).valid_height()) {
+			if(
+				!m_blockPixelAttributes.attribute(z, x).valid_height() ||
+				!m_blockPixelAttributes.attribute(z, x - 1).valid_height() ||
+				!m_blockPixelAttributes.attribute(z - 1, x).valid_height()
+			)
 				continue;
-			}
+
+			// calculate shadow to apply
 			int y = m_blockPixelAttributes.attribute(z, x).height;
 			int y1 = m_blockPixelAttributes.attribute(z, x - 1).height;
 			int y2 = m_blockPixelAttributes.attribute(z - 1, x).height;
 			int d = ((y - y1) + (y - y2)) * 12;
-			if (d > 36) {
+			if (d > 36)
 				d = 36;
-			}
 			// more thickness -> less visible shadows: t=0 -> 100% visible, t=255 -> 0% visible
 			if (m_drawAlpha)
 				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thickness) / 255.0);
+
 			Color c = m_image->getPixel(getImageX(x), getImageY(imageY));
 			c.r = colorSafeBounds(c.r + d);
 			c.g = colorSafeBounds(c.g + d);
@@ -627,17 +602,14 @@ inline void TileGenerator::renderShading(int zPos)
 
 void TileGenerator::renderScale()
 {
-	string scaleText;
-
 	if (m_scales & SCALE_TOP) {
 		m_image->drawText(24, 0, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
 			stringstream buf;
 			buf << i * 16;
-			scaleText = buf.str();
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
-			m_image->drawText(xPos + 2, 0, scaleText, m_scaleColor);
+			m_image->drawText(xPos + 2, 0, buf.str(), m_scaleColor);
 			m_image->drawLine(xPos, 0, xPos, m_yBorder - 1, m_scaleColor);
 		}
 	}
@@ -647,10 +619,9 @@ void TileGenerator::renderScale()
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
 			stringstream buf;
 			buf << i * 16;
-			scaleText = buf.str();
 
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			m_image->drawText(2, yPos, scaleText, m_scaleColor);
+			m_image->drawText(2, yPos, buf.str(), m_scaleColor);
 			m_image->drawLine(0, yPos, m_xBorder - 1, yPos, m_scaleColor);
 		}
 	}
@@ -659,11 +630,10 @@ void TileGenerator::renderScale()
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
 			stringstream buf;
 			buf << i * 16;
-			scaleText = buf.str();
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
 			int yPos = m_yBorder + m_mapHeight*m_zoom;
-			m_image->drawText(xPos + 2, yPos, scaleText, m_scaleColor);
+			m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 			m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
 		}
 	}
@@ -672,11 +642,10 @@ void TileGenerator::renderScale()
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
 			stringstream buf;
 			buf << i * 16;
-			scaleText = buf.str();
 
 			int xPos = m_xBorder + m_mapWidth*m_zoom;
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			m_image->drawText(xPos + 2, yPos, scaleText, m_scaleColor);
+			m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 			m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
 		}
 	}
@@ -704,9 +673,8 @@ void TileGenerator::renderPlayers(const std::string &inputPath)
 inline std::list<int> TileGenerator::getZValueList() const
 {
 	std::list<int> zlist;
-	for (std::list<std::pair<int, int> >::const_iterator position = m_positions.begin(); position != m_positions.end(); ++position) {
+	for (std::list<std::pair<int, int> >::const_iterator position = m_positions.begin(); position != m_positions.end(); ++position)
 		zlist.push_back(position->second);
-	}
 	zlist.sort();
 	zlist.unique();
 	zlist.reverse();
@@ -740,6 +708,7 @@ inline int TileGenerator::getImageY(int val) const
 	return (m_zoom*val) + m_yBorder;
 }
 
-inline void TileGenerator::setZoomed(int x, int y, Color color) {
+inline void TileGenerator::setZoomed(int x, int y, Color color)
+{
 	m_image->drawFilledRect(getImageX(x), getImageY(y), m_zoom, m_zoom, color);
 }
