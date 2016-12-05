@@ -10,7 +10,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - cmake
-      - libgd2-noxpm-dev
+      - libfreeimage-dev
       - libsqlite3-dev
       - p7zip
       - g++-6

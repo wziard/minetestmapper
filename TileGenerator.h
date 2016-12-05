@@ -1,7 +1,6 @@
 #ifndef TILEGENERATOR_HEADER
 #define TILEGENERATOR_HEADER
 
-#include <gd.h>
 #include <iosfwd>
 #include <list>
 #include <config.h>
