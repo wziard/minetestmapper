@@ -7,7 +7,14 @@ beds:fancy_bed_top 172 112 103
 # bones
 bones:bones 86 86 86
 
+# carts
+carts:brakerail 129 110 81
+carts:powerrail 154 136 81
+carts:rail 143 123 90
+
 # default
+default:acacia_bush_leaves 90 124 55
+default:acacia_bush_stem 84 76 69
 default:acacia_leaves 108 147 67
 default:acacia_sapling 87 116 61
 default:acacia_tree 188 109 90
@@ -20,6 +27,8 @@ default:aspen_wood 209 198 169
 default:bookshelf 128 99 55
 default:brick 117 71 69
 default:bronzeblock 185 110 15
+default:bush_leaves 34 52 29
+default:bush_stem 45 33 23
 default:cactus 52 116 15
 default:chest 140 108 65
 default:chest_locked 140 108 65
@@ -28,6 +37,9 @@ default:cloud 255 255 255
 default:coalblock 57 57 57
 default:cobble 88 84 82
 default:copperblock 192 126 63
+default:coral_brown 139 104 72
+default:coral_orange 191 62 12
+default:coral_skeleton 235 230 214
 default:desert_cobble 146 95 76
 default:desert_sand 206 165 98
 default:desert_stone 129 79 60
@@ -83,7 +95,6 @@ default:pine_needles 13 36 21
 default:pine_sapling 27 48 25
 default:pine_tree 182 155 124
 default:pine_wood 221 184 128
-default:rail 143 123 90
 default:river_water_flowing 39 66 106 128 224
 default:river_water_source 39 66 106 128 224
 default:sand 214 207 158
@@ -107,6 +118,8 @@ default:stone_with_iron 97 94 93
 default:stone_with_mese 97 94 93
 default:stonebrick 99 96 95
 default:torch 120 98 67
+default:torch_ceiling 120 98 67
+default:torch_wall 120 98 67
 default:tree 164 131 88
 default:water_flowing 39 66 106 128 224
 default:water_source 39 66 106 128 224
