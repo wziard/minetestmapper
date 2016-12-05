@@ -10,7 +10,7 @@ This version is both faster and provides more features than the now deprecated P
 Requirements
 ------------
 
-* libgd
+* FreeImage
 * sqlite3
 * leveldb (optional, set ENABLE_LEVELDB=1 in CMake to enable leveldb support)
 * hiredis (optional, set ENABLE_REDIS=1 in CMake to enable redis support)

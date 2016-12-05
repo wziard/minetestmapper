@@ -45,15 +45,15 @@ if(NOT CUSTOM_DOCDIR STREQUAL "")
 endif()
 
 
-# Libraries: gd
+# Libraries: freeimage
 
-find_library(LIBGD_LIBRARY gd)
-find_path(LIBGD_INCLUDE_DIR gd.h)
-message (STATUS "libgd library: ${LIBGD_LIBRARY}")
-message (STATUS "libgd headers: ${LIBGD_INCLUDE_DIR}")
-if(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
-	message(FATAL_ERROR "libgd not found!")
-endif(NOT LIBGD_LIBRARY OR NOT LIBGD_INCLUDE_DIR)
+find_library(FREEIMAGE_LIBRARY freeimage)
+find_path(FREEIMAGE_INCLUDE_DIR FreeImage.h)
+message (STATUS "FreeImage library: ${FREEIMAGE_LIBRARY}")
+message (STATUS "FreeImage headers: ${FREEIMAGE_INCLUDE_DIR}")
+if(NOT FREEIMAGE_LIBRARY OR NOT FREEIMAGE_INCLUDE_DIR)
+	message(FATAL_ERROR "FreeImage not found!")
+endif(NOT FREEIMAGE_LIBRARY OR NOT FREEIMAGE_INCLUDE_DIR)
 
 # Libraries: zlib
 
@@ -127,7 +127,7 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	${SQLITE3_INCLUDE_DIR}
-	${LIBGD_INCLUDE_DIR}
+	${FREEIMAGE_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 )
 
@@ -165,7 +165,7 @@ target_link_libraries(
 	${SQLITE3_LIBRARY}
 	${LEVELDB_LIBRARY}
 	${REDIS_LIBRARY}
-	${LIBGD_LIBRARY}
+	${FREEIMAGE_LIBRARY}
 	${ZLIB_LIBRARY}
 )
 

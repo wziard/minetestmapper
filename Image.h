@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include <string>
-#include <gd.h>
+#include <FreeImage.h>
 
 struct Color {
 	Color() : r(0), g(0), b(0), a(0) {};
@@ -29,7 +29,7 @@ private:
 	Image(const Image&);
 
 	int m_width, m_height;
-	gdImagePtr m_image;
+	FIBITMAP *m_image;
 };
 
 #endif // IMAGE_HEADER
