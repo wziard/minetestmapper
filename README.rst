@@ -20,6 +20,16 @@ e.g. on Debian:
 
 	sudo apt-get install libgd-dev libsqlite3-dev libleveldb-dev libhiredis-dev
 
+Windows
+^^^^^^^
+Minetestmapper for Windows can be downloaded here: https://github.com/minetest/minetestmapper/releases
+
+After extracting the archive somewhere minetestmapper will be available from cmd.exe:
+::
+
+	cd C:\Users\yourname\Desktop\example\path
+	minetestmapper.exe --help
+
 Compilation
 -----------
 
