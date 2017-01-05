@@ -9,6 +9,8 @@ struct Color {
 	Color() : r(0), g(0), b(0), a(0) {};
 	Color(u8 r, u8 g, u8 b) : r(r), g(g), b(b), a(255) {};
 	Color(u8 r, u8 g, u8 b, u8 a) : r(r), g(g), b(b), a(a) {};
+	inline Color noAlpha() const { return Color(r, g, b); }
+
 	u8 r, g, b, a;
 };
 

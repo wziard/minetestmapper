@@ -526,7 +526,7 @@ void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos,
 							continue;
 						}
 					} else {
-						setZoomed(imageX, imageY, c);
+						setZoomed(imageX, imageY, c.noAlpha());
 						m_readPixels[z] |= (1 << x);
 					}
 					if(!(m_readInfo[z] & (1 << x))) {
