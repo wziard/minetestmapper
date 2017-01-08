@@ -12,13 +12,14 @@ Requirements
 
 * libgd
 * sqlite3
-* leveldb (optional, set ENABLE_LEVELDB=1 in CMake to enable leveldb support)
-* hiredis (optional, set ENABLE_REDIS=1 in CMake to enable redis support)
+* leveldb (optional, set ENABLE_LEVELDB=1 in CMake to enable)
+* hiredis (optional, set ENABLE_REDIS=1 in CMake to enable)
+* Postgres libraries (optional, set ENABLE_POSTGRES=1 in CMake to enable)
 
 e.g. on Debian:
 ^^^^^^^^^^^^^^^
 
-	sudo apt-get install libgd-dev libsqlite3-dev libleveldb-dev libhiredis-dev
+	sudo apt-get install libgd-dev libsqlite3-dev libleveldb-dev libhiredis-dev libpq-dev
 
 Windows
 ^^^^^^^
@@ -86,7 +87,7 @@ max-y:
     Don't draw nodes above this y value, e.g. ``--max-y 75``
 
 backend:
-    Use specific map backend, supported: *sqlite3*, *leveldb*, *redis*, e.g. ``--backend leveldb``
+    Use specific map backend; supported: *sqlite3*, *leveldb*, *redis*, *postgresql*, e.g. ``--backend leveldb``
 
 geometry:
     Limit area to specific geometry (*x:y+w+h* where x and y specify the lower left corner), e.g. ``--geometry -800:-800+1600+1600``
