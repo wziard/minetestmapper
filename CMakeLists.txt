@@ -21,9 +21,10 @@ if(WIN32)
 	set(BINDIR ".")
 	set(DOCDIR ".")
 else()
-	set(SHAREDIR "${CMAKE_INSTALL_PREFIX}/share/minetest") # an extra dir. for just one file doesn't seem useful
+	set(SHAREDIR "${CMAKE_INSTALL_PREFIX}/share/minetest") # reuse Minetest share dir
 	set(BINDIR "${CMAKE_INSTALL_PREFIX}/bin")
 	set(DOCDIR "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}")
+	set(MANDIR "${CMAKE_INSTALL_PREFIX}/share/man")
 endif()
 
 set(CUSTOM_SHAREDIR "" CACHE STRING "Directory to install data files into")
@@ -215,6 +216,9 @@ install(FILES "AUTHORS" DESTINATION "${DOCDIR}")
 install(FILES "COPYING" DESTINATION "${DOCDIR}")
 install(FILES "README.rst" DESTINATION "${DOCDIR}")
 install(FILES "colors.txt" DESTINATION "${SHAREDIR}")
+if(UNIX)
+	install(FILES "minetestmapper.6" DESTINATION "${MANDIR}/man6")
+endif()
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Overview mapper for Minetest")
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
