@@ -394,7 +394,9 @@ void TileGenerator::renderMap()
 				//uint8_t flags = data[1];
 
 				size_t dataOffset = 0;
-				if (version >= 22)
+				if (version >= 27)
+					dataOffset = 6;
+				else if (version >= 22)
 					dataOffset = 4;
 				else
 					dataOffset = 2;
