@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include <arpa/inet.h>
 #include "db-postgresql.h"
 #include "util.h"
