@@ -14,13 +14,14 @@ carts:rail 143 123 90
 
 # default
 default:acacia_bush_leaves 90 124 55
+default:acacia_bush_sapling 85 118 58
 default:acacia_bush_stem 84 76 69
 default:acacia_leaves 108 147 67
 default:acacia_sapling 87 116 61
 default:acacia_tree 188 109 90
 default:acacia_wood 146 60 37
 default:apple 145 20 9
-default:aspen_leaves 66 89 38
+default:aspen_leaves 70 104 27
 default:aspen_sapling 82 110 43
 default:aspen_tree 218 197 166
 default:aspen_wood 209 198 169
@@ -28,10 +29,13 @@ default:bookshelf 128 99 55
 default:brick 117 71 69
 default:bronzeblock 185 110 15
 default:bush_leaves 34 52 29
+default:bush_sapling 65 60 40
 default:bush_stem 45 33 23
 default:cactus 52 116 15
 default:chest 140 108 65
 default:chest_locked 140 108 65
+default:chest_locked_open 140 108 65
+default:chest_open 140 108 65
 default:clay 182 182 182
 default:cloud 255 255 255
 default:coalblock 57 57 57
@@ -42,6 +46,9 @@ default:coral_orange 191 62 12
 default:coral_skeleton 235 230 214
 default:desert_cobble 146 95 76
 default:desert_sand 206 165 98
+default:desert_sandstone 195 152 92
+default:desert_sandstone_block 192 151 94
+default:desert_sandstone_brick 191 151 94
 default:desert_stone 129 79 60
 default:desert_stone_block 130 79 60
 default:desert_stonebrick 129 79 60
@@ -50,7 +57,8 @@ default:dirt 95 64 39
 default:dirt_with_dry_grass 187 148 77
 default:dirt_with_grass 66 112 31
 default:dirt_with_grass_footsteps 66 112 31
-default:dirt_with_snow 223 224 236
+default:dirt_with_rainforest_litter 74 38 8
+default:dirt_with_snow 224 225 238
 default:dry_grass_1 208 172 87
 default:dry_grass_2 210 174 87
 default:dry_grass_3 210 174 87
@@ -84,6 +92,7 @@ default:lava_flowing 255 100 0
 default:lava_source 255 100 0
 default:leaves 34 52 29
 default:mese 220 220 0
+default:mese_post_light 131 102 57
 default:meselamp 211 213 139
 default:mossycobble 86 90 68
 default:obsidian 19 21 24
@@ -105,8 +114,11 @@ default:sapling 65 59 40
 default:sign_wall_steel 144 144 144
 default:sign_wall_wood 145 101 64
 default:silver_sand 193 191 179
-default:snow 223 224 236
-default:snowblock 223 224 236
+default:silver_sandstone 195 192 181
+default:silver_sandstone_block 192 190 179
+default:silver_sandstone_brick 190 188 178
+default:snow 224 225 238
+default:snowblock 224 225 238
 default:steelblock 194 194 194
 default:stone 97 94 93
 default:stone_block 99 96 95
@@ -116,7 +128,9 @@ default:stone_with_diamond 97 94 93
 default:stone_with_gold 97 94 93
 default:stone_with_iron 97 94 93
 default:stone_with_mese 97 94 93
+default:stone_with_tin 97 94 93
 default:stonebrick 99 96 95
+default:tinblock 149 149 149
 default:torch 120 98 67
 default:torch_ceiling 120 98 67
 default:torch_wall 120 98 67
@@ -190,10 +204,6 @@ flowers:tulip 130 99 36
 flowers:viola 106 60 159
 flowers:waterlily 102 158 61
 
-# nyancat
-nyancat:nyancat 198 111 167
-nyancat:nyancat_rainbow 123 100 94
-
 # stairs
 stairs:slab_acacia_wood 146 60 37
 stairs:slab_aspen_wood 209 198 169
@@ -202,10 +212,14 @@ stairs:slab_bronzeblock 185 110 15
 stairs:slab_cobble 88 84 82
 stairs:slab_copperblock 192 126 63
 stairs:slab_desert_cobble 146 95 76
+stairs:slab_desert_sandstone 195 152 92
+stairs:slab_desert_sandstone_block 192 151 94
+stairs:slab_desert_sandstone_brick 191 151 94
 stairs:slab_desert_stone 129 79 60
 stairs:slab_desert_stone_block 130 79 60
 stairs:slab_desert_stonebrick 129 79 60
 stairs:slab_goldblock 230 201 29
+stairs:slab_ice 167 206 247
 stairs:slab_junglewood 54 37 11
 stairs:slab_mossycobble 86 90 68
 stairs:slab_obsidian 19 21 24
@@ -215,6 +229,10 @@ stairs:slab_pine_wood 221 184 128
 stairs:slab_sandstone 197 193 143
 stairs:slab_sandstone_block 195 190 141
 stairs:slab_sandstonebrick 193 189 140
+stairs:slab_silver_sandstone 195 192 181
+stairs:slab_silver_sandstone_block 192 190 179
+stairs:slab_silver_sandstone_brick 190 188 178
+stairs:slab_snowblock 224 225 238
 stairs:slab_steelblock 194 194 194
 stairs:slab_stone 97 94 93
 stairs:slab_stone_block 99 96 95
@@ -228,10 +246,14 @@ stairs:stair_bronzeblock 185 110 15
 stairs:stair_cobble 88 84 82
 stairs:stair_copperblock 192 126 63
 stairs:stair_desert_cobble 146 95 76
+stairs:stair_desert_sandstone 195 152 92
+stairs:stair_desert_sandstone_block 192 151 94
+stairs:stair_desert_sandstone_brick 191 151 94
 stairs:stair_desert_stone 129 79 60
 stairs:stair_desert_stone_block 130 79 60
 stairs:stair_desert_stonebrick 129 79 60
 stairs:stair_goldblock 230 201 29
+stairs:stair_ice 167 206 247
 stairs:stair_junglewood 54 37 11
 stairs:stair_mossycobble 86 90 68
 stairs:stair_obsidian 19 21 24
@@ -241,6 +263,10 @@ stairs:stair_pine_wood 221 184 128
 stairs:stair_sandstone 197 193 143
 stairs:stair_sandstone_block 195 190 141
 stairs:stair_sandstonebrick 193 189 140
+stairs:stair_silver_sandstone 195 192 181
+stairs:stair_silver_sandstone_block 192 190 179
+stairs:stair_silver_sandstone_brick 190 188 178
+stairs:stair_snowblock 224 225 238
 stairs:stair_steelblock 194 194 194
 stairs:stair_stone 97 94 93
 stairs:stair_stone_block 99 96 95

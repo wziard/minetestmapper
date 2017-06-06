@@ -1,11 +1,14 @@
 ==FILE== mods/dumpnodes/init.lua
 local function nd_get_tiles(nd)
-	if nd.tiles then
-		return nd.tiles
-	elseif nd.tile_images then
-		return nd.tile_images
+	return nd.tiles or nd.tile_images
+end
+
+local function nd_get_tile(nd, n)
+	local tile = nd_get_tiles(nd)[n]
+	if type(tile) == 'table' then
+		tile = tile.name
 	end
-	return nil
+	return tile
 end
 
 local function pairs_s(dict)
@@ -20,19 +23,19 @@ end
 minetest.register_chatcommand("dumpnodes", {
 	params = "",
 	description = "",
-	func = function(plname, param)
+	func = function(player, param)
 		local n = 0
 		local ntbl = {}
 		for _, nn in pairs_s(minetest.registered_nodes) do
 			local nd = minetest.registered_nodes[nn]
 			local prefix, name = nn:match('(.*):(.*)')
-			if prefix == nil or name == nil or prefix == '' or name == '' then
+			if prefix == nil or name == nil then
 				print("ignored(1): " .. nn)
 			else
 				if ntbl[prefix] == nil then
 					ntbl[prefix] = {}
 				end
-				ntbl[prefix][name] = nd
+				ntbl[prefix][name] = true
 			end
 		end
 		local out, err = io.open('nodes.txt', 'wb')
@@ -40,20 +43,17 @@ minetest.register_chatcommand("dumpnodes", {
 			return true, "io.open(): " .. err
 		end
 		for _, prefix in pairs_s(ntbl) do
-			local nodes = ntbl[prefix]
 			out:write('# ' .. prefix .. '\n')
-			for _, name in pairs_s(nodes) do
-				local nd = nodes[name]
-				if nd.drawtype ~= 'airlike' and nd_get_tiles(nd) ~= nil then
-					local tl = nd_get_tiles(nd)[1]
-					if type(tl) == 'table' then
-						tl = tl.name
-					end
-					tl = (tl .. '^'):match('(.-)^')
-					out:write(prefix .. ':' .. name .. ' ' .. tl .. '\n')
-					n = n + 1
+			for _, name in pairs_s(ntbl[prefix]) do
+				local nn = prefix .. ":" .. name
+				local nd = minetest.registered_nodes[nn]
+				if nd.drawtype == 'airlike' or nd_get_tiles(nd) == nil then
+					print("ignored(2): " .. nn)
 				else
-					print("ignored(2): " .. prefix .. ':' .. name)
+					local tl = nd_get_tile(nd, 1)
+					tl = (tl .. '^'):match('(.-)^') -- strip modifiers
+					out:write(nn .. ' ' .. tl .. '\n')
+					n = n + 1
 				end
 			end
 			out:write('\n')
@@ -67,7 +67,7 @@ minetest.register_chatcommand("dumpnodes", {
 import sys
 from PIL import Image
 
-def tsum(a, b):
+def tadd(a, b):
 	return tuple(sum(e) for e in zip(a, b))
 
 if len(sys.argv) < 2:
@@ -75,8 +75,7 @@ if len(sys.argv) < 2:
 	print("Usage: %s <input>" % sys.argv[0])
 	exit(1)
 
-inp = Image.open(sys.argv[1])
-inp = inp.convert('RGBA')
+inp = Image.open(sys.argv[1]).convert('RGBA')
 ind = inp.load()
 
 cl = (0, 0, 0)
@@ -84,39 +83,36 @@ counted = 0
 for x in range(inp.size[0]):
 	for y in range(inp.size[1]):
 		px = ind[x, y]
-		if px[3] < 128:
-			continue
-		cl = tsum(cl, px[:3])
-		counted = counted + 1
+		if px[3] < 128: continue # alpha
+		cl = tadd(cl, px[:3])
+		counted += 1
 
 if counted == 0:
-	sys.stderr.write("didn't find avg. color for %s\n" % sys.argv[1])
+	sys.stderr.write("did not find avg color for %s\n" % sys.argv[1])
 	print("0 0 0")
-	exit(0)
-
-cl = tuple(int(n / counted) for n in cl)
-print("%d %d %d" % cl)
+else:
+	cl = tuple(int(n / counted) for n in cl)
+	print("%d %d %d" % cl)
 ==SCRIPT==
 #!/bin/bash -e
-
 AVGCOLOR_PATH=/path/to/avgcolor.py
-MTGAME_PATH=/path/to/minetest_game
+GAME_PATH=/path/to/minetest_game
+MODS_PATH= # path to "mods" folder, only set if you have loaded mods
 NODESTXT_PATH=./nodes.txt
 COLORSTXT_PATH=./colors.txt
 
 while read -r line; do
-	set -- junk $line
-	shift
+	set -- junk $line; shift
 	if [[ -z "$1" || $1 == "#" ]]; then
-		echo $line
-		continue
+		echo "$line"; continue
 	fi
-	tex=$(find $MTGAME_PATH -type f -name "$2")
+	tex=$(find $GAME_PATH -type f -name "$2")
+	[[ -z "$tex" && -n "$MODS_PATH" ]] && tex=$(find $MODS_PATH -type f -name "$2")
 	if [ -z "$tex" ]; then
 		echo "skip $1: texture not found" >&2
 		continue
 	fi
-	echo $1 $(python $AVGCOLOR_PATH "$tex")
+	echo "$1" $(python $AVGCOLOR_PATH "$tex")
 	echo "ok $1" >&2
 done < $NODESTXT_PATH > $COLORSTXT_PATH
 # Use nicer colors for water and lava:
@@ -128,8 +124,8 @@ sed -re 's/^doors:(.*glass[^ ]*) ([0-9 ]+)$/doors:\1 \2 64 16/g' $COLORSTXT_PATH
 # Fix xpanes color:
 sed -re 's/^xpanes:((pane|bar)(_flat)?) [0-9 ]+$/xpanes:\1 194 194 227 64 16/g' $COLORSTXT_PATH -i
 ==INSTRUCTIONS==
-1) Make sure avgcolors.py outputs the usage instructions
+1) Make sure avgcolors.py works (outputs the usage instructions when run)
 2) Add the dumpnodes mod to Minetest
 3) Create a world and load dumpnodes & all mods you want to generate colors for
 4) Execute /dumpnodes ingame
-5) Run the script to generate colors.txt (make sure to replace /path/to/... with the actual paths)
+5) Run the script to generate colors.txt (make sure to adjust the PATH variables at the top)
