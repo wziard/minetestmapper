@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 CXX=g++-6
-[ $CC == "clang" ] && CXX=clang-3.8
+[ $CC == "clang" ] && CXX=clang++-3.8
 export CXX
 
 
