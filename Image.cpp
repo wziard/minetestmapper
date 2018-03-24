@@ -103,7 +103,7 @@ void Image::drawCircle(int x, int y, int diameter, const Color &c)
 
 void Image::save(const std::string &filename)
 {
-#if (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION >= 1 && GD_RELEASE_VERSION >= 1) || GD_MAJOR_VERSION > 2
+#if (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION == 1 && GD_RELEASE_VERSION >= 1) || (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION > 1) || GD_MAJOR_VERSION > 2
 	const char *f = filename.c_str();
 	if (gdSupportsFileType(f, 1) == GD_FALSE)
 		throw std::runtime_error("Image format not supported by gd");
