@@ -56,6 +56,10 @@ PlayerAttributes::PlayerAttributes(const std::string &sourceDirectory)
 		positionStream >> player.z;
 		player.name = name;
 
+		player.x /= 10.0;
+		player.y /= 10.0;
+		player.z /= 10.0;
+
 		m_players.push_back(player);
 	}
 	closedir(dir);

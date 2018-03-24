@@ -617,7 +617,7 @@ void TileGenerator::renderScale()
 			stringstream buf;
 			buf << i * 16;
 
-			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
+			int xPos = getImageX(i * 16, true);
 			if (xPos >= 0) {
 				m_image->drawText(xPos + 2, 0, buf.str(), m_scaleColor);
 				m_image->drawLine(xPos, 0, xPos, m_yBorder - 1, m_scaleColor);
@@ -631,7 +631,7 @@ void TileGenerator::renderScale()
 			stringstream buf;
 			buf << i * 16;
 
-			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
+			int yPos = getImageY(i * 16 + 1, true);
 			if (yPos >= 0) {
 				m_image->drawText(2, yPos, buf.str(), m_scaleColor);
 				m_image->drawLine(0, yPos, m_xBorder - 1, yPos, m_scaleColor);
@@ -644,8 +644,8 @@ void TileGenerator::renderScale()
 			stringstream buf;
 			buf << i * 16;
 
-			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
-			int yPos = m_yBorder + m_mapHeight*m_zoom;
+			int xPos = getImageX(i * 16, true),
+				yPos = m_yBorder + m_mapHeight*m_zoom;
 			if (xPos >= 0) {
 				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 				m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
@@ -658,8 +658,8 @@ void TileGenerator::renderScale()
 			stringstream buf;
 			buf << i * 16;
 
-			int xPos = m_xBorder + m_mapWidth*m_zoom;
-			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
+			int xPos = m_xBorder + m_mapWidth*m_zoom,
+				yPos = getImageY(i * 16 + 1, true);
 			if (yPos >= 0) {
 				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 				m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
@@ -670,17 +670,21 @@ void TileGenerator::renderScale()
 
 void TileGenerator::renderOrigin()
 {
-	int imageX = (-m_xMin * 16)*m_zoom + m_xBorder;
-	int imageY = (m_mapHeight - m_zMin * -16)*m_zoom + m_yBorder;
-	m_image->drawCircle(imageX, imageY, 12, m_originColor);
+	if (m_xMin > 0 || m_xMax < 0 ||
+		m_zMin > 0 || m_zMax < 0)
+		return;
+	m_image->drawCircle(getImageX(0, true), getImageY(0, true), 12, m_originColor);
 }
 
 void TileGenerator::renderPlayers(const std::string &inputPath)
 {
 	PlayerAttributes players(inputPath);
 	for (PlayerAttributes::Players::iterator player = players.begin(); player != players.end(); ++player) {
-		int imageX = (player->x / 10 - m_xMin * 16)*m_zoom + m_xBorder;
-		int imageY = (m_mapHeight - (player->z / 10 - m_zMin * 16))*m_zoom + m_yBorder;
+		if (player->x < m_xMin * 16 || player->x > m_xMax * 16 ||
+			player->z < m_zMin * 16 || player->z > m_zMax * 16)
+			continue;
+		int imageX = getImageX(player->x, true),
+			imageY = getImageY(player->z, true);
 
 		m_image->drawCircle(imageX, imageY, 5, m_playerColor);
 		m_image->drawText(imageX + 2, imageY + 2, player->name, m_playerColor);
@@ -715,13 +719,17 @@ void TileGenerator::printUnknown()
 	}
 }
 
-inline int TileGenerator::getImageX(int val) const
+inline int TileGenerator::getImageX(int val, bool absolute) const
 {
+	if (absolute)
+		val = (val - m_xMin * 16);
 	return (m_zoom*val) + m_xBorder;
 }
 
-inline int TileGenerator::getImageY(int val) const
+inline int TileGenerator::getImageY(int val, bool absolute) const
 {
+	if (absolute)
+		val = m_mapHeight - (val - m_zMin * 16); // Z axis is flipped on image
 	return (m_zoom*val) + m_yBorder;
 }
 

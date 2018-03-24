@@ -88,8 +88,8 @@ private:
 	void renderPlayers(const std::string &inputPath);
 	void writeImage(const std::string &output);
 	void printUnknown();
-	int getImageX(int val) const;
-	int getImageY(int val) const;
+	int getImageX(int val, bool absolute=false) const;
+	int getImageY(int val, bool absolute=false) const;
 	void setZoomed(int x, int y, Color color);
 
 private:
