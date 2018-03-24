@@ -10,12 +10,7 @@
 #include "Image.h"
 
 #ifndef NDEBUG
-#define SIZECHECK(x, y) do { \
-		if((x) < 0 || (x) >= m_width) \
-			throw std::out_of_range("sizecheck x"); \
-		if((y) < 0 || (y) >= m_height) \
-			throw std::out_of_range("sizecheck y"); \
-	} while(0)
+#define SIZECHECK(x, y) check_bounds((x), (y), m_width, m_height)
 #else
 #define SIZECHECK(x, y) do {} while(0)
 #endif
@@ -40,6 +35,22 @@ static inline Color int2color(int c)
 	return c2;
 }
 
+static inline void check_bounds(int x, int y, int width, int height)
+{
+	if(x < 0 || x >= width) {
+		std::ostringstream oss;
+		oss << "Access outside image bounds (x), 0 < "
+			<< x << " < " << width << " is false.";
+		throw std::out_of_range(oss.str());
+	}
+	if(y < 0 || y >= height) {
+		std::ostringstream oss;
+		oss << "Access outside image bounds (y), 0 < "
+			<< y << " < " << height << " is false.";
+		throw std::out_of_range(oss.str());
+	}
+}
+
 
 Image::Image(int width, int height) :
 	m_width(width), m_height(height), m_image(NULL)
@@ -60,10 +71,7 @@ void Image::setPixel(int x, int y, const Color &c)
 
 Color Image::getPixel(int x, int y)
 {
-#ifndef NDEBUG
-	if(x < 0 || x > m_width || y < 0 || y > m_height)
-		throw std::out_of_range("sizecheck");
-#endif
+	SIZECHECK(x, y);
 	return int2color(m_image->tpixels[y][x]);
 }
 
