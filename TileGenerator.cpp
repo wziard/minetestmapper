@@ -618,8 +618,10 @@ void TileGenerator::renderScale()
 			buf << i * 16;
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
-			m_image->drawText(xPos + 2, 0, buf.str(), m_scaleColor);
-			m_image->drawLine(xPos, 0, xPos, m_yBorder - 1, m_scaleColor);
+			if (xPos >= 0) {
+				m_image->drawText(xPos + 2, 0, buf.str(), m_scaleColor);
+				m_image->drawLine(xPos, 0, xPos, m_yBorder - 1, m_scaleColor);
+			}
 		}
 	}
 
@@ -630,8 +632,10 @@ void TileGenerator::renderScale()
 			buf << i * 16;
 
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			m_image->drawText(2, yPos, buf.str(), m_scaleColor);
-			m_image->drawLine(0, yPos, m_xBorder - 1, yPos, m_scaleColor);
+			if (yPos >= 0) {
+				m_image->drawText(2, yPos, buf.str(), m_scaleColor);
+				m_image->drawLine(0, yPos, m_xBorder - 1, yPos, m_scaleColor);
+			}
 		}
 	}
 
@@ -642,8 +646,10 @@ void TileGenerator::renderScale()
 
 			int xPos = (m_xMin * -16 + i * 16)*m_zoom + m_xBorder;
 			int yPos = m_yBorder + m_mapHeight*m_zoom;
-			m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
-			m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
+			if (xPos >= 0) {
+				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
+				m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
+			}
 		}
 	}
 
@@ -654,8 +660,10 @@ void TileGenerator::renderScale()
 
 			int xPos = m_xBorder + m_mapWidth*m_zoom;
 			int yPos = (m_mapHeight - 1 - (i * 16 - m_zMin * 16))*m_zoom + m_yBorder;
-			m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
-			m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
+			if (yPos >= 0) {
+				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
+				m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
+			}
 		}
 	}
 }
