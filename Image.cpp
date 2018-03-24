@@ -103,12 +103,9 @@ void Image::drawCircle(int x, int y, int diameter, const Color &c)
 
 void Image::save(const std::string &filename)
 {
-	FILE *f = fopen(filename.c_str(), "wb");
-	if(!f) {
-		std::ostringstream oss;
-		oss << "Error writing image file: " << std::strerror(errno);
-		throw std::runtime_error(oss.str());
-	}
-	gdImagePng(m_image, f); // other formats?
-	fclose(f);
+	const char *f = filename.c_str();
+	if (gdSupportsFileType(f, 1) == GD_FALSE)
+		throw std::runtime_error("Image format not supported by gd");
+	if (gdImageFile(m_image, f) == GD_FALSE)
+		throw std::runtime_error("Error saving image");
 }
