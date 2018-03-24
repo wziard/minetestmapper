@@ -30,6 +30,18 @@ static inline uint16_t readU16(const unsigned char *data)
 	return data[0] << 8 | data[1];
 }
 
+template<typename T>
+static inline T mymax(T a, T b)
+{
+	return (a > b) ? a : b;
+}
+
+template<typename T>
+static inline T mymin(T a, T b)
+{
+	return (a > b) ? b : a;
+}
+
 // rounds n (away from 0) to a multiple of f while preserving the sign of n
 static int round_multiple_nosign(int n, int f)
 {
@@ -58,11 +70,9 @@ static int readBlockContent(const unsigned char *mapData, int version, int datap
 	throw std::runtime_error(oss.str());
 }
 
-static inline int colorSafeBounds(int color)
+static inline unsigned int colorSafeBounds (int channel)
 {
-	color = (color > 255) ? 255 : color;
-	color = (color < 0) ? 0 : color;
-	return color;
+	return mymin(mymax(channel, 0), 255);
 }
 
 static Color mixColors(Color a, Color b)
@@ -337,19 +347,21 @@ void TileGenerator::loadBlocks()
 
 void TileGenerator::createImage()
 {
+	const int scale_d = 40; // pixels reserved for a scale
+	if(!m_drawScale)
+		m_scales = 0;
+
 	m_mapWidth = (m_xMax - m_xMin + 1) * 16;
 	m_mapHeight = (m_zMax - m_zMin + 1) * 16;
-	if(m_drawScale) {
-		m_xBorder = (m_scales & SCALE_LEFT) ? 40 : 0;
-		m_yBorder = (m_scales & SCALE_TOP) ? 40 : 0;
-	}
+	m_xBorder = (m_scales & SCALE_LEFT) ? scale_d : 0;
+	m_yBorder = (m_scales & SCALE_TOP) ? scale_d : 0;
 	m_blockPixelAttributes.setWidth(m_mapWidth);
 
 	int image_width, image_height;
 	image_width = (m_mapWidth * m_zoom) + m_xBorder;
-	image_width += m_drawScale && (m_scales & SCALE_RIGHT) ? 40 : 0;
+	image_width += (m_scales & SCALE_RIGHT) ? scale_d : 0;
 	image_height = (m_mapHeight * m_zoom) + m_yBorder;
-	image_height += m_drawScale && (m_scales & SCALE_BOTTOM) ? 40 : 0;
+	image_height += (m_scales & SCALE_BOTTOM) ? scale_d : 0;
 
 	if(image_width > 4096 || image_height > 4096)
 		std::cerr << "Warning: The width or height of the image to be created exceeds 4096 pixels!"
@@ -593,11 +605,11 @@ void TileGenerator::renderShading(int zPos)
 			int y1 = m_blockPixelAttributes.attribute(z, x - 1).height;
 			int y2 = m_blockPixelAttributes.attribute(z - 1, x).height;
 			int d = ((y - y1) + (y - y2)) * 12;
-			if (d > 36)
-				d = 36;
-			// more thickness -> less visible shadows: t=0 -> 100% visible, t=255 -> 0% visible
-			if (m_drawAlpha)
-				d = d * ((0xFF - m_blockPixelAttributes.attribute(z, x).thickness) / 255.0);
+			if (m_drawAlpha) { // less visible shadow with increasing "thickness"
+				double t = m_blockPixelAttributes.attribute(z, x).thickness * 1.2;
+				d *= 1.0 - mymin(t, 255.0) / 255.0;
+			}
+			d = mymin(d, 36);
 
 			Color c = m_image->getPixel(getImageX(x), getImageY(imageY));
 			c.r = colorSafeBounds(c.r + d);
