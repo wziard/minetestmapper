@@ -437,9 +437,9 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 				}
 				m_readPixels.set(x, z);
 
-				// do this afterwards so we can record height values 
+				// do this afterwards so we can record height values
 				// inside transparent nodes (water) too
-				if (m_readInfo.get(x, z)) {
+				if (!m_readInfo.get(x, z)) {
 					m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
 					m_readInfo.set(x, z);
 				}
@@ -509,6 +509,8 @@ void TileGenerator::renderShading(int zPos)
 
 void TileGenerator::renderScale()
 {
+	const int scale_d = 40; // see createImage()
+
 	if (m_scales & SCALE_TOP) {
 		m_image->drawText(24, 0, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
@@ -538,12 +540,15 @@ void TileGenerator::renderScale()
 	}
 
 	if (m_scales & SCALE_BOTTOM) {
+		int xPos = m_xBorder + m_mapWidth*m_zoom - 24 - 8,
+			yPos = m_yBorder + m_mapHeight*m_zoom + scale_d - 12;
+		m_image->drawText(xPos, yPos, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
 			stringstream buf;
 			buf << i * 16;
 
-			int xPos = getImageX(i * 16, true),
-				yPos = m_yBorder + m_mapHeight*m_zoom;
+			xPos = getImageX(i * 16, true);
+			yPos = m_yBorder + m_mapHeight*m_zoom;
 			if (xPos >= 0) {
 				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 				m_image->drawLine(xPos, yPos, xPos, yPos + 39, m_scaleColor);
@@ -552,12 +557,15 @@ void TileGenerator::renderScale()
 	}
 
 	if (m_scales & SCALE_RIGHT) {
+		int xPos = m_xBorder + m_mapWidth*m_zoom + scale_d - 2 - 8,
+			yPos = m_yBorder + m_mapHeight*m_zoom - 24 - 12;
+		m_image->drawText(xPos, yPos, "Z", m_scaleColor);
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
 			stringstream buf;
 			buf << i * 16;
 
-			int xPos = m_xBorder + m_mapWidth*m_zoom,
-				yPos = getImageY(i * 16 + 1, true);
+			xPos = m_xBorder + m_mapWidth*m_zoom;
+			yPos = getImageY(i * 16 + 1, true);
 			if (yPos >= 0) {
 				m_image->drawText(xPos + 2, yPos, buf.str(), m_scaleColor);
 				m_image->drawLine(xPos, yPos, xPos + 39, yPos, m_scaleColor);
@@ -581,11 +589,14 @@ void TileGenerator::renderPlayers(const std::string &inputPath)
 		if (player->x < m_xMin * 16 || player->x > m_xMax * 16 ||
 			player->z < m_zMin * 16 || player->z > m_zMax * 16)
 			continue;
+		if (player->y < m_yMin || player->y > m_yMax)
+			continue;
 		int imageX = getImageX(player->x, true),
 			imageY = getImageY(player->z, true);
 
-		m_image->drawCircle(imageX, imageY, 5, m_playerColor);
-		m_image->drawText(imageX + 2, imageY + 2, player->name, m_playerColor);
+		m_image->drawFilledRect(imageX - 1, imageY, 3, 1, m_playerColor);
+		m_image->drawFilledRect(imageX, imageY - 1, 1, 3, m_playerColor);
+		m_image->drawText(imageX + 2, imageY, player->name, m_playerColor);
 	}
 }
 
@@ -609,12 +620,11 @@ void TileGenerator::writeImage(const std::string &output)
 
 void TileGenerator::printUnknown()
 {
-	if (m_unknownNodes.size() > 0) {
-		std::cerr << "Unknown nodes:" << std::endl;
-		for (NameSet::iterator node = m_unknownNodes.begin(); node != m_unknownNodes.end(); ++node) {
-			std::cerr << *node << std::endl;
-		}
-	}
+	if (m_unknownNodes.size() == 0)
+		return;
+	std::cerr << "Unknown nodes:" << std::endl;
+	for (NameSet::iterator node = m_unknownNodes.begin(); node != m_unknownNodes.end(); ++node)
+		std::cerr << "\t" << *node << std::endl;
 }
 
 inline int TileGenerator::getImageX(int val, bool absolute) const

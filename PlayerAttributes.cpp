@@ -114,7 +114,7 @@ void PlayerAttributes::readSqlite(const std::string &db_name)
 
 		m_players.push_back(player);
 	}
-	
+
 	sqlite3_finalize(stmt_get_player_pos);
 	sqlite3_close(db);
 }
