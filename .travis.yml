@@ -3,22 +3,19 @@ compiler:
   - gcc
   - clang
 sudo: false
+dist: trusty
 addons:
   apt:
     sources:
-      - llvm-toolchain-precise-3.8
+      - llvm-toolchain-trusty-5.0
       - ubuntu-toolchain-r-test
     packages:
       - cmake
-      - libgd2-noxpm-dev
+      - libgd2-dev
       - libsqlite3-dev
-      - p7zip
-      - g++-6
-      - clang-3.8
-before_install:
-  - # Nothing ever works correctly with precise, use a custom libleveldb build
-  - wget http://minetest.kitsunemimi.pw/libleveldb-1.18-ubuntu12.04.7z
-  - 7zr x -olibleveldb libleveldb-1.18-ubuntu12.04.7z
+      - libleveldb-dev
+      - g++-7
+      - clang-5.0
 script: ./util/travis/script.sh
 notifications:
   email: false

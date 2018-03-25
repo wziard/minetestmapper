@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-CXX=g++-6
-[ $CC == "clang" ] && CXX=clang++-3.8
+CXX=g++-7
+[ $CC == "clang" ] && CXX=clang++-5.0
 export CXX
 
 
@@ -10,8 +10,6 @@ cd travisbuild
 
 cmake \
 	-DENABLE_LEVELDB=1 \
-	-DLEVELDB_LIBRARY=../libleveldb/lib/libleveldb.so \
-	-DLEVELDB_INCLUDE_DIR=../libleveldb/include \
 	..
 
 make -j2
