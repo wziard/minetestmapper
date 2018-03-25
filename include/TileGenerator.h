@@ -14,7 +14,9 @@
 #endif
 #include <stdint.h>
 #include <string>
+
 #include "PixelAttributes.h"
+#include "BlockDecoder.h"
 #include "Image.h"
 #include "db.h"
 #include "types.h"
@@ -43,11 +45,9 @@ class TileGenerator
 private:
 #if __cplusplus >= 201103L
 	typedef std::unordered_map<std::string, ColorEntry> ColorMap;
-	typedef std::unordered_map<int, std::string> NameMap;
 	typedef std::unordered_set<std::string> NameSet;
 #else
 	typedef std::map<std::string, ColorEntry> ColorMap;
-	typedef std::map<int, std::string> NameMap;
 	typedef std::set<std::string> NameSet;
 #endif
 
@@ -80,7 +80,7 @@ private:
 	void createImage();
 	void renderMap();
 	std::list<int> getZValueList() const;
-	void renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version);
+	void renderMapBlock(const BlockDecoder &blk, const BlockPos &pos);
 	void renderMapBlockBottom(const BlockPos &pos);
 	void renderShading(int zPos);
 	void renderScale();
@@ -121,7 +121,6 @@ private:
 	int m_mapWidth;
 	int m_mapHeight;
 	std::list<std::pair<int, int> > m_positions;
-	NameMap m_nameMap;
 	ColorMap m_colorMap;
 	uint16_t m_readPixels[16];
 	uint16_t m_readInfo[16];
@@ -129,8 +128,6 @@ private:
 	Color m_color[16][16];
 	uint8_t m_thickness[16][16];
 
-	int m_blockAirId;
-	int m_blockIgnoreId;
 	int m_zoom;
 	uint m_scales;
 }; // class TileGenerator

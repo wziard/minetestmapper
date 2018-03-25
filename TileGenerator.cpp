@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <cstdlib>
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -7,10 +6,11 @@
 #include <stdexcept>
 #include <cstring>
 #include <vector>
+
+#include "TileGenerator.h"
 #include "config.h"
 #include "PlayerAttributes.h"
-#include "TileGenerator.h"
-#include "ZlibDecompressor.h"
+#include "BlockDecoder.h"
 #include "util.h"
 #include "db-sqlite3.h"
 #if USE_POSTGRESQL
@@ -24,11 +24,6 @@
 #endif
 
 using namespace std;
-
-static inline uint16_t readU16(const unsigned char *data)
-{
-	return data[0] << 8 | data[1];
-}
 
 template<typename T>
 static inline T mymax(T a, T b)
@@ -52,22 +47,6 @@ static int round_multiple_nosign(int n, int f)
 		return n; // n == abs_n * sign
 	else
 		return sign * (abs_n + f - (abs_n % f));
-}
-
-static int readBlockContent(const unsigned char *mapData, int version, int datapos)
-{
-	if (version >= 24) {
-		size_t index = datapos << 1;
-		return (mapData[index] << 8) | mapData[index + 1];
-	} else if (version >= 20) {
-		if (mapData[datapos] <= 0x80)
-			return mapData[datapos];
-		else
-			return (int(mapData[datapos]) << 4) | (int(mapData[datapos + 0x2000]) >> 4);
-	}
-	std::ostringstream oss;
-	oss << "Unsupported map version " << version;
-	throw std::runtime_error(oss.str());
 }
 
 static inline unsigned int colorSafeBounds (int channel)
@@ -373,6 +352,7 @@ void TileGenerator::createImage()
 
 void TileGenerator::renderMap()
 {
+	BlockDecoder blk;
 	std::list<int> zlist = getZValueList();
 	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
 		int zPos = *zPosition;
@@ -399,87 +379,12 @@ void TileGenerator::renderMap()
 			const BlockList &blockStack = blocks[xPos];
 			for (BlockList::const_iterator it = blockStack.begin(); it != blockStack.end(); ++it) {
 				const BlockPos &pos = it->first;
-				const unsigned char *data = it->second.c_str();
-				size_t length = it->second.length();
 
-				uint8_t version = data[0];
-				//uint8_t flags = data[1];
-
-				size_t dataOffset = 0;
-				if (version >= 27)
-					dataOffset = 6;
-				else if (version >= 22)
-					dataOffset = 4;
-				else
-					dataOffset = 2;
-
-				ZlibDecompressor decompressor(data, length);
-				decompressor.setSeekPos(dataOffset);
-				ustring mapData = decompressor.decompress();
-				ustring mapMetadata = decompressor.decompress();
-				dataOffset = decompressor.seekPos();
-
-				// Skip unused data
-				if (version <= 21)
-					dataOffset += 2;
-				if (version == 23)
-					dataOffset += 1;
-				if (version == 24) {
-					uint8_t ver = data[dataOffset++];
-					if (ver == 1) {
-						uint16_t num = readU16(data + dataOffset);
-						dataOffset += 2;
-						dataOffset += 10 * num;
-					}
-				}
-
-				// Skip unused static objects
-				dataOffset++; // Skip static object version
-				int staticObjectCount = readU16(data + dataOffset);
-				dataOffset += 2;
-				for (int i = 0; i < staticObjectCount; ++i) {
-					dataOffset += 13;
-					uint16_t dataSize = readU16(data + dataOffset);
-					dataOffset += dataSize + 2;
-				}
-				dataOffset += 4; // Skip timestamp
-
-				m_blockAirId = -1;
-				m_blockIgnoreId = -1;
-				m_nameMap.clear();
-				// Read mapping
-				if (version >= 22) {
-					dataOffset++; // mapping version
-					uint16_t numMappings = readU16(data + dataOffset);
-					dataOffset += 2;
-					for (int i = 0; i < numMappings; ++i) {
-						uint16_t nodeId = readU16(data + dataOffset);
-						dataOffset += 2;
-						uint16_t nameLen = readU16(data + dataOffset);
-						dataOffset += 2;
-						string name = string(reinterpret_cast<const char *>(data) + dataOffset, nameLen);
-						if (name == "air")
-							m_blockAirId = nodeId;
-						else if (name == "ignore")
-							m_blockIgnoreId = nodeId;
-						else
-							m_nameMap[nodeId] = name;
-						dataOffset += nameLen;
-					}
-					// Skip block if made of only air or ignore nodes
-					if (m_nameMap.empty())
-						continue;
-				}
-
-				// Node timers
-				if (version >= 25) {
-					dataOffset++;
-					uint16_t numTimers = readU16(data + dataOffset);
-					dataOffset += 2;
-					dataOffset += numTimers * 10;
-				}
-
-				renderMapBlock(mapData, pos, version);
+				blk.reset();
+				blk.decode(it->second);
+				if (blk.isEmpty())
+					continue;
+				renderMapBlock(blk, pos);
 
 				bool allRead = true;
 				for (int i = 0; i < 16; ++i) {
@@ -502,11 +407,10 @@ void TileGenerator::renderMap()
 	}
 }
 
-void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos, int version)
+void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 {
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
-	const unsigned char *mapData = mapBlock.c_str();
 	int minY = (pos.y * 16 > m_yMin) ? 0 : m_yMin - pos.y * 16;
 	int maxY = (pos.y * 16 < m_yMax) ? 15 : m_yMax - pos.y * 16;
 	for (int z = 0; z < 16; ++z) {
@@ -517,16 +421,9 @@ void TileGenerator::renderMapBlock(const ustring &mapBlock, const BlockPos &pos,
 			int imageX = xBegin + x;
 
 			for (int y = maxY; y >= minY; --y) {
-				int position = x + (y << 4) + (z << 8);
-				int content = readBlockContent(mapData, version, position);
-				if (content == m_blockAirId || content == m_blockIgnoreId)
+				string name = blk.getNode(x, y, z);
+				if (name == "")
 					continue;
-				NameMap::iterator blockName = m_nameMap.find(content);
-				if (blockName == m_nameMap.end()) {
-					std::cerr << "Skipping node with invalid ID." << std::endl;
-					continue;
-				}
-				const string &name = blockName->second;
 				ColorMap::const_iterator color = m_colorMap.find(name);
 				if (color != m_colorMap.end()) {
 					const Color c = color->second.to_color();

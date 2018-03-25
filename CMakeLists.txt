@@ -173,6 +173,7 @@ configure_file(
 add_definitions ( -DUSE_CMAKE_CONFIG_H )
 
 set(mapper_SRCS
+	BlockDecoder.cpp
 	PixelAttributes.cpp
 	PlayerAttributes.cpp
 	TileGenerator.cpp
