@@ -1,7 +1,6 @@
 #ifndef TILEGENERATOR_HEADER
 #define TILEGENERATOR_HEADER
 
-#include <gd.h>
 #include <iosfwd>
 #include <list>
 #include <config.h>
@@ -32,11 +31,29 @@ struct ColorEntry {
 	ColorEntry(): r(0), g(0), b(0), a(0), t(0) {};
 	ColorEntry(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t t): r(r), g(g), b(b), a(a), t(t) {};
 	inline Color to_color() const { return Color(r, g, b, a); }
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t a;
-	uint8_t t;
+	uint8_t r, g, b, a, t;
+};
+
+struct BitmapThing { // 16x16 bitmap
+	inline void reset() {
+		for (int i = 0; i < 16; ++i)
+			val[i] = 0;
+	}
+	inline bool full() const {
+		for (int i = 0; i < 16; ++i) {
+			if (val[i] != 0xffff)
+				return false;
+		}
+		return true;
+	}
+	inline void set(unsigned int x, unsigned int z) {
+		val[z] |= (1 << x);
+	}
+	inline bool get(unsigned int x, unsigned int z) {
+		return !!(val[z] & (1 << x));
+	}
+
+	uint16_t val[16];
 };
 
 
@@ -122,8 +139,8 @@ private:
 	int m_mapHeight;
 	std::list<std::pair<int, int> > m_positions;
 	ColorMap m_colorMap;
-	uint16_t m_readPixels[16];
-	uint16_t m_readInfo[16];
+	BitmapThing m_readPixels;
+	BitmapThing m_readInfo;
 	NameSet m_unknownNodes;
 	Color m_color[16][16];
 	uint8_t m_thickness[16][16];

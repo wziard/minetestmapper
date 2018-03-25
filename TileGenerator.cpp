@@ -362,10 +362,8 @@ void TileGenerator::renderMap()
 			if (position->second != zPos)
 				continue;
 
-			for (int i = 0; i < 16; ++i) {
-				m_readPixels[i] = 0;
-				m_readInfo[i] = 0;
-			}
+			m_readPixels.reset();
+			m_readInfo.reset();
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
 					m_color[i][j] = m_bgColor; // This will be drawn by renderMapBlockBottom() for y-rows with only 'air', 'ignore' or unknown nodes if --drawalpha is used
@@ -386,23 +384,14 @@ void TileGenerator::renderMap()
 					continue;
 				renderMapBlock(blk, pos);
 
-				bool allRead = true;
-				for (int i = 0; i < 16; ++i) {
-					if (m_readPixels[i] != 0xffff)
-						allRead = false;
-				}
-				if (allRead)
+				// Exit out if all pixels for this MapBlock are covered
+				if (m_readPixels.full())
 					break;
 			}
-			bool allRead = true;
-			for (int i = 0; i < 16; ++i) {
-				if (m_readPixels[i] != 0xffff)
-					allRead = false;
-			}
-			if (!allRead)
+			if (!m_readPixels.full())
 				renderMapBlockBottom(blockStack.begin()->first);
 		}
-		if(m_shading)
+		if (m_shading)
 			renderShading(zPos);
 	}
 }
@@ -416,7 +405,7 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + 15 - z;
 		for (int x = 0; x < 16; ++x) {
-			if (m_readPixels[z] & (1 << x))
+			if (m_readPixels.get(x, z))
 				continue;
 			int imageX = xBegin + x;
 
@@ -424,36 +413,35 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 				string name = blk.getNode(x, y, z);
 				if (name == "")
 					continue;
-				ColorMap::const_iterator color = m_colorMap.find(name);
-				if (color != m_colorMap.end()) {
-					const Color c = color->second.to_color();
-					if (m_drawAlpha) {
-						// mix with previous color (unless first visible time)
-						if (m_color[z][x].a == 0)
-							m_color[z][x] = c;
-						else
-							m_color[z][x] = mixColors(m_color[z][x], c);
-						if(m_color[z][x].a == 0xff) {
-							// color is opaque at this depth (no point continuing)
-							setZoomed(imageX, imageY, m_color[z][x]);
-							m_readPixels[z] |= (1 << x);
-							m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
-						} else {
-							// near thickness value to thickness of current node
-							m_thickness[z][x] = (m_thickness[z][x] + color->second.t) / 2.0;
-							continue;
-						}
-					} else {
-						setZoomed(imageX, imageY, c.noAlpha());
-						m_readPixels[z] |= (1 << x);
-					}
-					if(!(m_readInfo[z] & (1 << x))) {
-						m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
-						m_readInfo[z] |= (1 << x);
-					}
-				} else {
+				ColorMap::const_iterator it = m_colorMap.find(name);
+				if (it == m_colorMap.end()) {
 					m_unknownNodes.insert(name);
 					continue;
+				}
+				const Color c = it->second.to_color();
+				if (m_drawAlpha) {
+					if (m_color[z][x].a == 0)
+						m_color[z][x] = c; // first visible time, no color mixing
+					else
+						m_color[z][x] = mixColors(m_color[z][x], c);
+					if(m_color[z][x].a < 0xff) {
+						// near thickness value to thickness of current node
+						m_thickness[z][x] = (m_thickness[z][x] + it->second.t) / 2.0;
+						continue;
+					}
+					// color became opaque, draw it
+					setZoomed(imageX, imageY, m_color[z][x]);
+					m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
+				} else {
+					setZoomed(imageX, imageY, c.noAlpha());
+				}
+				m_readPixels.set(x, z);
+
+				// do this afterwards so we can record height values 
+				// inside transparent nodes (water) too
+				if (m_readInfo.get(x, z)) {
+					m_blockPixelAttributes.attribute(15 - z, xBegin + x).height = pos.y * 16 + y;
+					m_readInfo.set(x, z);
 				}
 				break;
 			}
@@ -463,21 +451,22 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 
 void TileGenerator::renderMapBlockBottom(const BlockPos &pos)
 {
+	if (!m_drawAlpha)
+		return; // "missing" pixels can only happen with --drawalpha
+
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + 15 - z;
 		for (int x = 0; x < 16; ++x) {
-			if (m_readPixels[z] & (1 << x))
+			if (m_readPixels.get(x, z))
 				continue;
 			int imageX = xBegin + x;
 
-			if (m_drawAlpha) {
-				// set color in case it wasn't done in renderMapBlock()
-				setZoomed(imageX, imageY, m_color[z][x]);
-				m_readPixels[z] |= (1 << x);
-				m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
-			}
+			// set color since it wasn't done in renderMapBlock()
+			setZoomed(imageX, imageY, m_color[z][x]);
+			m_readPixels.set(x, z);
+			m_blockPixelAttributes.attribute(15 - z, xBegin + x).thickness = m_thickness[z][x];
 		}
 	}
 }
