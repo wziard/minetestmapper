@@ -12,8 +12,8 @@ Requirements
 
 * libgd
 * sqlite3
-* leveldb (optional, set ENABLE_LEVELDB=1 in CMake to enable)
-* hiredis (optional, set ENABLE_REDIS=1 in CMake to enable)
+* LevelDB (optional, set ENABLE_LEVELDB=1 in CMake to enable)
+* hiredis library (optional, set ENABLE_REDIS=1 in CMake to enable)
 * Postgres libraries (optional, set ENABLE_POSTGRES=1 in CMake to enable)
 
 e.g. on Debian:
@@ -25,7 +25,7 @@ Windows
 ^^^^^^^
 Minetestmapper for Windows can be downloaded here: https://github.com/minetest/minetestmapper/releases
 
-After extracting the archive somewhere minetestmapper will be available from cmd.exe:
+After extracting the archive, minetestmapper can be invoked from cmd.exe:
 ::
 
 	cd C:\Users\yourname\Desktop\example\path
@@ -57,7 +57,7 @@ bgcolor:
     Background color of image, e.g. ``--bgcolor '#ffffff'``
 
 scalecolor:
-    Color of scale, e.g. ``--scalecolor '#000000'``
+    Color of scale marks and text, e.g. ``--scalecolor '#000000'``
 
 playercolor:
     Color of player indicators, e.g. ``--playercolor '#ff0000'``
@@ -66,16 +66,16 @@ origincolor:
     Color of origin indicator, e.g. ``--origincolor '#ff0000'``
 
 drawscale:
-    Draw tick marks, ``--drawscale``
+    Draw scale(s) with tick marks and numbers, ``--drawscale``
 
 drawplayers:
-    Draw player indicators, ``--drawplayers``
+    Draw player indicators with name, ``--drawplayers``
 
 draworigin:
     Draw origin indicator, ``--draworigin``
 
 drawalpha:
-    Allow nodes to be drawn with transparency, ``--drawalpha``
+    Allow nodes to be drawn with transparency (e.g. water), ``--drawalpha``
 
 noshading:
     Don't draw shading on nodes, ``--noshading``
@@ -87,16 +87,16 @@ max-y:
     Don't draw nodes above this y value, e.g. ``--max-y 75``
 
 backend:
-    Use specific map backend; supported: *sqlite3*, *leveldb*, *redis*, *postgresql*, e.g. ``--backend leveldb``
+    Override auto-detected map backend; supported: *sqlite3*, *leveldb*, *redis*, *postgresql*, e.g. ``--backend leveldb``
 
 geometry:
-    Limit area to specific geometry (*x:y+w+h* where x and y specify the lower left corner), e.g. ``--geometry -800:-800+1600+1600``
+    Limit area to specific geometry (*x:z+w+h* where x and z specify the lower left corner), e.g. ``--geometry -800:-800+1600+1600``
 
 zoom:
-    "Zoom" the image by using more than one pixel per node, e.g. ``--zoom 4``
+    Apply zoom to drawn nodes by enlarging them to n*n squares, e.g. ``--zoom 4``
 
 colors:
-    Forcefully set path to colors.txt file (it's autodetected otherwise), e.g. ``--colors ../minetest/mycolors.txt``
+    Override auto-detected path to colors.txt, e.g. ``--colors ../minetest/mycolors.txt``
 
 scales:
     Draw scales on specified image edges (letters *t b l r* meaning top, bottom, left and right), e.g. ``--scales tbr``
