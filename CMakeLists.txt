@@ -159,7 +159,7 @@ endif(ENABLE_REDIS)
 
 include_directories(
 	"${PROJECT_BINARY_DIR}"
-	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include"
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	${SQLITE3_INCLUDE_DIR}
 	${LIBGD_INCLUDE_DIR}
@@ -167,7 +167,7 @@ include_directories(
 )
 
 configure_file(
-	"${PROJECT_SOURCE_DIR}/cmake_config.h.in"
+	"${PROJECT_SOURCE_DIR}/include/cmake_config.h.in"
 	"${PROJECT_BINARY_DIR}/cmake_config.h"
 )
 add_definitions ( -DUSE_CMAKE_CONFIG_H )
