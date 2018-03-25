@@ -1,12 +1,3 @@
-/*
- * =====================================================================
- *        Version:  1.0
- *        Created:  01.09.2012 14:38:08
- *         Author:  Miroslav Bendík
- *        Company:  LinuxOS.sk
- * =====================================================================
- */
-
 #ifndef PLAYERATTRIBUTES_H_D7THWFVV
 #define PLAYERATTRIBUTES_H_D7THWFVV
 
@@ -16,23 +7,24 @@
 struct Player
 {
 	std::string name;
-	double x;
-	double y;
-	double z;
-}; /* -----  end of struct Player  ----- */
+	double x, y, z;
+};
 
 class PlayerAttributes
 {
 public:
 	typedef std::list<Player> Players;
 
-	PlayerAttributes(const std::string &sourceDirectory);
+	PlayerAttributes(const std::string &worldDir);
 	Players::iterator begin();
 	Players::iterator end();
 
 private:
+	void readFiles(const std::string &playersPath);
+	void readSqlite(const std::string &db_name);
+
 	Players m_players;
-}; /* -----  end of class PlayerAttributes  ----- */
+};
 
 #endif /* end of include guard: PLAYERATTRIBUTES_H_D7THWFVV */
 
