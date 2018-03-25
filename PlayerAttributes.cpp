@@ -10,8 +10,10 @@
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
+
 #include "config.h"
 #include "PlayerAttributes.h"
+#include "util.h"
 
 using namespace std;
 
@@ -21,39 +23,36 @@ PlayerAttributes::PlayerAttributes(const std::string &sourceDirectory)
 	string playersPath = sourceDirectory + "players";
 	DIR *dir;
 	dir = opendir (playersPath.c_str());
-	if (dir == NULL) {
+	if (dir == NULL)
 		return;
-	}
 
 	struct dirent *ent;
 	while ((ent = readdir (dir)) != NULL) {
-		if (ent->d_name[0] == '.') {
+		if (ent->d_name[0] == '.')
 			continue;
-		}
 
 		string path = playersPath + PATH_SEPARATOR + ent->d_name;
+		ifstream in(path.c_str());
+		if(!in.good())
+			continue;
 
-		ifstream in;
-		in.open(path.c_str(), ifstream::in);
-		string buffer;
-		string name;
-		string position;
-		while (getline(in, buffer)) {
-			if (buffer.find("name = ") == 0) {
-				name = buffer.substr(7);
-			}
-			else if (buffer.find("position = ") == 0) {
-				position = buffer.substr(12, buffer.length() - 13);
-			}
-		}
-		char comma;
+		string name, position;
+		name = read_setting("name", in);
+		in.seekg(0);
+		position = read_setting("position", in);
+
 		Player player;
-		istringstream positionStream(position, istringstream::in);
-		positionStream >> player.x;
-		positionStream >> comma;
-		positionStream >> player.y;
-		positionStream >> comma;
-		positionStream >> player.z;
+		istringstream iss(position);
+		char tmp;
+		iss >> tmp; // '('
+		iss >> player.x;
+		iss >> tmp; // ','
+		iss >> player.y;
+		iss >> tmp; // ','
+		iss >> player.z;
+		iss >> tmp; // ')'
+		if(tmp != ')')
+			continue;
 		player.name = name;
 
 		player.x /= 10.0;

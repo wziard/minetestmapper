@@ -28,35 +28,24 @@ static inline std::string i64tos(int64_t i)
 	return os.str();
 }
 
-std::string get_setting_default(std::string name, std::istream &is, const std::string def)
-{
-	try {
-		return get_setting(name, is);
-	} catch(std::runtime_error e) {
-		return def;
-	}
-}
-
 DBRedis::DBRedis(const std::string &mapdir)
 {
 	std::ifstream ifs((mapdir + "/world.mt").c_str());
 	if(!ifs.good())
 		throw std::runtime_error("Failed to read world.mt");
 	std::string tmp;
-	try {
-		tmp = get_setting("redis_address", ifs);
-		ifs.seekg(0);
-		hash = get_setting("redis_hash", ifs);
-		ifs.seekg(0);
-	} catch(std::runtime_error e) {
-		throw std::runtime_error("Set redis_address and redis_hash in world.mt to use the redis backend");
-	}
+
+	tmp = read_setting("redis_address", ifs);
+	ifs.seekg(0);
+	hash = read_setting("redis_hash", ifs);
+	ifs.seekg(0);
+
 	const char *addr = tmp.c_str();
-	int port = stoi64(get_setting_default("redis_port", ifs, "6379"));
+	int port = stoi64(read_setting_default("redis_port", ifs, "6379"));
 	ctx = tmp.find('/') != std::string::npos ? redisConnectUnix(addr) : redisConnect(addr, port);
-	if(!ctx)
+	if(!ctx) {
 		throw std::runtime_error("Cannot allocate redis context");
-	else if(ctx->err) {
+	} else if(ctx->err) {
 		std::string err = std::string("Connection error: ") + ctx->errstr;
 		redisFree(ctx);
 		throw std::runtime_error(err);

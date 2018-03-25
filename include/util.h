@@ -1,10 +1,18 @@
-#ifndef _UTIL_H
-#define _UTIL_H
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <string>
-#include <stdexcept>
 #include <fstream>
 
-std::string get_setting(std::string name, std::istream &is);
+std::string read_setting(const std::string &name, std::istream &is);
 
-#endif // _UTIL_H
+inline std::string read_setting_default(const std::string &name, std::istream &is, const std::string &def)
+{
+	try {
+		return read_setting(name, is);
+	} catch(std::runtime_error e) {
+		return def;
+	}
+}
+
+#endif // UTIL_H

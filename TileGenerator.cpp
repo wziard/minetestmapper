@@ -290,7 +290,7 @@ void TileGenerator::openDb(const std::string &input)
 		std::ifstream ifs((input + "/world.mt").c_str());
 		if(!ifs.good())
 			throw std::runtime_error("Failed to read world.mt");
-		backend = get_setting("backend", ifs);
+		backend = read_setting("backend", ifs);
 		ifs.close();
 	}
 

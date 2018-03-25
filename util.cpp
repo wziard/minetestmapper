@@ -1,3 +1,6 @@
+#include <stdexcept>
+#include <sstream>
+
 #include "util.h"
 
 inline std::string trim(const std::string &s)
@@ -23,11 +26,15 @@ inline std::string trim(const std::string &s)
   return s.substr(front, back - front);
 }
 
-#define EOFCHECK() \
-   if(is.eof()) \
-    throw std::runtime_error(((std::string) "Setting '") + name + "' not found");
+#define EOFCHECK() do { \
+    if (is.eof()) { \
+      std::ostringstream oss; \
+      oss << "Setting '" << name << "' not found."; \
+      throw std::runtime_error(oss.str()); \
+    } \
+  } while(0)
 
-std::string get_setting(std::string name, std::istream &is)
+std::string read_setting(const std::string &name, std::istream &is)
 {
   char c;
   char s[256];
