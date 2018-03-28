@@ -14,7 +14,7 @@ DBPostgreSQL::DBPostgreSQL(const std::string &mapdir)
 	std::ifstream ifs((mapdir + "/world.mt").c_str());
 	if(!ifs.good())
 		throw std::runtime_error("Failed to read world.mt");
-	std::string const connect_string = get_setting("pgsql_connection", ifs);
+	std::string connect_string = read_setting("pgsql_connection", ifs);
 	ifs.close();
 	db = PQconnectdb(connect_string.c_str());
 
