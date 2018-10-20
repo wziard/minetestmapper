@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 		generator.parseColorsFile(colors);
 		generator.generate(input, output);
 
-	} catch(std::runtime_error e) {
+	} catch(std::runtime_error &e) {
 		std::cerr << "Exception: " << e.what() << std::endl;
 		return 1;
 	}
