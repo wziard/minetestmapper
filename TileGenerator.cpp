@@ -269,7 +269,7 @@ void TileGenerator::parseColorsStream(std::istream &in)
 		if(strlen(line) == 0)
 			continue;
 
-		char name[64];
+		char name[64 + 1];
 		unsigned int r, g, b, a, t;
 		a = 255;
 		t = 0;
@@ -536,7 +536,7 @@ void TileGenerator::renderScale()
 	if (m_scales & SCALE_TOP) {
 		m_image->drawText(24, 0, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
-			stringstream buf;
+			std::ostringstream buf;
 			buf << i * 16;
 
 			int xPos = getImageX(i * 16, true);
@@ -550,7 +550,7 @@ void TileGenerator::renderScale()
 	if (m_scales & SCALE_LEFT) {
 		m_image->drawText(2, 24, "Z", m_scaleColor);
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
-			stringstream buf;
+			std::ostringstream buf;
 			buf << i * 16;
 
 			int yPos = getImageY(i * 16 + 1, true);
@@ -566,7 +566,7 @@ void TileGenerator::renderScale()
 			yPos = m_yBorder + m_mapHeight*m_zoom + scale_d - 12;
 		m_image->drawText(xPos, yPos, "X", m_scaleColor);
 		for (int i = (m_xMin / 4) * 4; i <= m_xMax; i += 4) {
-			stringstream buf;
+			std::ostringstream buf;
 			buf << i * 16;
 
 			xPos = getImageX(i * 16, true);
@@ -583,7 +583,7 @@ void TileGenerator::renderScale()
 			yPos = m_yBorder + m_mapHeight*m_zoom - 24 - 12;
 		m_image->drawText(xPos, yPos, "Z", m_scaleColor);
 		for (int i = (m_zMax / 4) * 4; i >= m_zMin; i -= 4) {
-			stringstream buf;
+			std::ostringstream buf;
 			buf << i * 16;
 
 			xPos = m_xBorder + m_mapWidth*m_zoom;

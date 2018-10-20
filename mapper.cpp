@@ -147,24 +147,21 @@ int main(int argc, char *argv[])
 				generator.setBackend(optarg);
 				break;
 			case 'a': {
-					std::istringstream iss;
-					iss.str(optarg);
+					std::istringstream iss(optarg);
 					int miny;
 					iss >> miny;
 					generator.setMinY(miny);
 				}
 				break;
 			case 'c': {
-					std::istringstream iss;
-					iss.str(optarg);
+					std::istringstream iss(optarg);
 					int maxy;
 					iss >> maxy;
 					generator.setMaxY(maxy);
 				}
 				break;
 			case 'g': {
-					std::istringstream geometry;
-					geometry.str(optarg);
+					std::istringstream geometry(optarg);
 					int x, y, w, h;
 					char c;
 					geometry >> x >> c >> y >> w >> h;
@@ -189,8 +186,7 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 'z': {
-					std::istringstream iss;
-					iss.str(optarg);
+					std::istringstream iss(optarg);
 					int zoom;
 					iss >> zoom;
 					generator.setZoom(zoom);
