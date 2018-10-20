@@ -95,18 +95,13 @@ int main(int argc, char *argv[])
 	std::string colors = "";
 
 	TileGenerator generator;
-	int option_index = 0;
-	int c = 0;
 	bool onlyPrintExtent = false;
 	while (1) {
-		c = getopt_long(argc, argv, "hi:o:", long_options, &option_index);
-		if (c == -1) {
-			if (input.empty() || output.empty()) {
-				usage();
-				return 0;
-			}
-			break;
-		}
+		int option_index;
+		int c = getopt_long(argc, argv, "hi:o:", long_options, &option_index);
+		if (c == -1)
+			break; // done
+
 		switch (c) {
 			case 'h':
 				usage();
@@ -208,14 +203,24 @@ int main(int argc, char *argv[])
 				exit(1);
 		}
 	}
-	if(colors == "")
-		colors = search_colors(input);
+
+	if (input.empty() || (!onlyPrintExtent && output.empty())) {
+		usage();
+		return 0;
+	}
+
 	try {
-		generator.parseColorsFile(colors);
-		if (onlyPrintExtent)
+
+		if (onlyPrintExtent) {
 			generator.printGeometry(input);
-		else
-			generator.generate(input, output);
+			return 0;
+		}
+
+		if(colors == "")
+			colors = search_colors(input);
+		generator.parseColorsFile(colors);
+		generator.generate(input, output);
+
 	} catch(std::runtime_error e) {
 		std::cerr << "Exception: " << e.what() << std::endl;
 		return 1;
