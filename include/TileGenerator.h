@@ -90,6 +90,7 @@ public:
 	void setZoom(int zoom);
 	void setScales(uint flags);
 	void setDontWriteEmpty(bool f);
+	void addMarker(std::string marker);
 
 private:
 	void parseColorsStream(std::istream &in);
@@ -147,6 +148,12 @@ private:
 	NameSet m_unknownNodes;
 	Color m_color[16][16];
 	uint8_t m_thickness[16][16];
+
+#if __cplusplus >= 201103L
+	std::unordered_set<std::string> m_markers;
+#else
+	std::set<std::string> m_markers;
+#endif
 
 	int m_zoom;
 	uint m_scales;
