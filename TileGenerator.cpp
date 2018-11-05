@@ -8,6 +8,7 @@
 #include <cstring>
 #include <vector>
 #include <math.h>
+#include <set>
 
 #include "TileGenerator.h"
 #include "config.h"
@@ -255,6 +256,12 @@ void TileGenerator::setDontWriteEmpty(bool f)
 {
 	m_dontWriteEmpty = f;
 }
+
+void TileGenerator::addMarker(std::string marker)
+{
+	m_markers.insert(marker);
+}
+
 
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
@@ -601,6 +608,12 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 				string name = blk.getNode(x, y, z);
 				if (name == "")
 					continue;
+
+				if (m_markers.count(name))
+				{
+					cout << name << " " << x << " " << y << " " << z << endl;
+				}
+
 				ColorMap::const_iterator it = m_colorMap.find(name);
 				if (it == m_colorMap.end()) {
 					m_unknownNodes.insert(name);

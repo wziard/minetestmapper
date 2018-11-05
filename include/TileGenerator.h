@@ -106,6 +106,7 @@ public:
 	void setScales(uint flags);
 	void setDontWriteEmpty(bool f);
 	void tilePositions();
+	void addMarker(std::string marker);
 
 private:
 	void parseColorsStream(std::istream &in);
@@ -176,6 +177,11 @@ private:
 	TileMap m_tiles;
 	int m_numTilesX, m_numTilesY;
 
+#if __cplusplus >= 201103L
+	std::unordered_set<std::string> m_markers;
+#else
+	std::set<std::string> m_markers;
+#endif
 	int m_zoom;
 	uint m_scales;
 	// stuff for pyramid building
