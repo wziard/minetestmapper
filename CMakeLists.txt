@@ -13,8 +13,8 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Werror -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g2 -Wall -Werror")
 
 if(WIN32)
 	set(SHAREDIR ".")
