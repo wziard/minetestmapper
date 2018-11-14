@@ -127,3 +127,9 @@ void Image::save(const std::string &filename)
 	fclose(f);
 #endif
 }
+
+
+void Image::fill(Color &c)
+{
+	gdImageFilledRectangle(m_image, 0, 0, m_width - 1 , m_height - 1, color2int(c));
+}
