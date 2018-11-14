@@ -84,6 +84,7 @@ public:
 	void setDrawScale(bool drawScale);
 	void setDrawAlpha(bool drawAlpha);
 	void setShading(bool shading);
+	void setLeaflet(bool leaflet);
 	void setGeometry(int x, int y, int w, int h);
 	void setTileSize(int w, int h);
 	void setMinY(int y);
@@ -118,6 +119,7 @@ private:
 	void setZoomed(int x, int y, Color color);
 
 private:
+	void outputLeafletCode(std::string const &output);
 	Color m_bgColor;
 	Color m_scaleColor;
 	Color m_originColor;
@@ -127,7 +129,9 @@ private:
 	bool m_drawScale;
 	bool m_drawAlpha;
 	bool m_shading;
+	bool m_leaflet;
 	bool m_dontWriteEmpty;
+
 	std::string m_backend;
 	int m_xBorder, m_yBorder;
 

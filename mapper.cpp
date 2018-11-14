@@ -30,6 +30,7 @@ void usage()
 			"  --backend <backend>\n"
 			"  --geometry x:y+w+h\n"
 			"  --tilesize wxh\n"
+			"  --leaflet\n"
 			"  --extent\n"
 			"  --zoom <zoomlevel>\n"
 			"  --colors <colors.txt>\n"
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
 		{"colors", required_argument, 0, 'C'},
 		{"scales", required_argument, 0, 'f'},
 		{"noemptyimage", no_argument, 0, 'n'},
+		{"leaflet", no_argument, 0, 'l'},
 		{0, 0, 0, 0}
 	};
 
@@ -146,6 +148,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'H':
 				generator.setShading(false);
+				break;
+			case 'l':
+				generator.setLeaflet(true);
 				break;
 			case 'd':
 				generator.setBackend(optarg);

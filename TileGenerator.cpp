@@ -79,6 +79,7 @@ TileGenerator::TileGenerator():
 	m_drawScale(false),
 	m_drawAlpha(false),
 	m_shading(true),
+	m_leaflet(false),
 	m_dontWriteEmpty(false),
 	m_backend(""),
 	m_xBorder(0),
@@ -179,6 +180,11 @@ void TileGenerator::setShading(bool shading)
 	m_shading = shading;
 }
 
+void TileGenerator::setLeaflet(bool leaflet)
+{
+	m_leaflet = leaflet;
+}
+
 void TileGenerator::setBackend(std::string backend)
 {
 	m_backend = backend;
@@ -245,6 +251,11 @@ void TileGenerator::setDontWriteEmpty(bool f)
 
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
+	if (m_leaflet)
+	{
+		outputLeafletCode(output);
+	}
+
 	string input_path = input;
 	if (input_path[input.length() - 1] != PATH_SEPARATOR) {
 		input_path += PATH_SEPARATOR;
@@ -264,6 +275,23 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 	if (m_tileW < INT_MAX || m_tileH < INT_MAX)
 	{
+		int minTileX = 0;
+		int minTileZ = 0;
+
+		int flipY = 1;
+		if (m_leaflet)
+		{
+			// for leaflet tiles, it's nice if the origin is on the corner between tile (-1,-1) and tile (0,0)
+			m_xMin = round_multiple_nosign(m_xMin, m_tileW);
+			m_zMin = round_multiple_nosign(m_zMin, m_tileH);
+			// for some reason the tile indices in leaflet are calculated with -(y/tilesize) while x is calculated with (x/tilesize)
+			// so in tile indices +y is pointing down, while in map coordinates it is pointing up (go figure, but whatever)
+			// this means tile 0_0_ is the tile with the origin in the top-left corner.
+			minTileX = m_xMin / m_tileW;
+			minTileZ = m_zMin / m_tileH + 1;
+			flipY = -1;
+		}
+
 		tilePositions();
 
 		int trueXMin = m_xMin;
@@ -294,14 +322,22 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 						renderPlayers(input_path);
 					}
 					ostringstream fn;
-					fn << x << '_' << y << '_' << output;
+					fn << x + minTileX << '_' << (flipY * (y + minTileZ)) << '_' << output;
 					writeImage(fn.str());
 				}
 			}
 		}
+		if (m_leaflet)
+		{
+			ostringstream fn;
+			fn << "empty_tile_" << output;
+			m_image->fill(m_bgColor);
+			writeImage(fn.str());
+		}
 	}
 	else
 	{
+
 		m_image->fill(m_bgColor);
 		renderMap(m_positions);
 		if (m_drawScale) {
@@ -790,3 +826,71 @@ void TileGenerator::tilePositions()
 	}
 }
 
+
+static char const *leafletMapHtml =
+"<!DOCTYPE html>\n"
+"<html>\n"
+"<head>\n"
+"	<title>MinetestMapper</title>\n"
+"	<meta charset=\"utf-8\" />\n"
+"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+"	<!-- link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" /-->\n"
+"	<link rel=\"stylesheet\" href=\"leaflet.css\" integrity=\"sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==\" crossorigin=\"\"/>\n"
+"	<script src=\"leaflet.js\" integrity=\"sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==\" crossorigin=\"\"></script>\n"
+"</head>\n"
+"<body>\n"
+"<div id=\"mapid\" style=\"width: 90vw; height: 90vh;\"></div>\n"
+"<script>\n"
+"	var MineTestMap = L.map('mapid', {\n"
+"	crs: L.CRS.Simple,\n"
+"//	minZoom: -3,\n"
+"	});\n"
+"	MineTestMap.setView([0.0, 0.0], 0);\n"
+"	L.tileLayer('{x}_{y}_%s', {\n"
+"		minNativeZoom: 0,\n"
+"		maxNativeZoom: 0,\n"
+"		attribution: 'Minetest World',\n"
+"		tileSize: %d,\n"
+"		errorTileUrl: \"empty_tile_%s\",\n"
+"		}).addTo(MineTestMap);\n"
+"	var popup = L.popup();\n"
+"	function onMapClick(e) {\n"
+"		popup\n"
+"			.setLatLng(e.latlng)\n"
+"			.setContent(\"You clicked the map at \"+ e.latlng.toString())\n"
+"			.openOn(mymap);\n"
+"	}\n"
+"	MineTestMap.on('click', onMapClick);\n"
+"</script>\n"
+"</body>\n"
+"</html>\n";
+
+
+void TileGenerator::outputLeafletCode(std::string const &output)
+{
+	if (m_tileH != m_tileW)
+	{
+		throw std::runtime_error("For a leaflet map the tiles must be square!");
+		return;
+	}
+
+	ostringstream fn;
+	fn << output << ".html";
+
+	// I use fopen instead of ostr because I need fprintf to put the correct values into the
+	// html static string above. ostream is nice and C++ and all, but formatted output handling
+	// for streams is retarded. Use the best tool for the job.
+	FILE *out = fopen(fn.str().c_str(), "w");
+
+	if (!out)
+	{
+		cout << "error opening file:" << fn.str() << endl;
+		return;
+	}
+
+	fprintf(out, leafletMapHtml, output.c_str(), m_tileW, output.c_str());
+
+	fclose(out);
+
+
+}
