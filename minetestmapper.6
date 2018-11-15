@@ -83,6 +83,16 @@ a multiple of 16. The filenames will be created in the form <x>_<y>_<filename>, 
 are the tile numbers and <filename> is the name specified with -o. Skip empty tiles by also specifying --noemptyimage.
 
 .TP
+.BR \-\-leaflet " " \fIleaflet\fR
+    Together with --tilesize, output tiles in a leaflet-compaitble numbering and also output a html file to display the map.
+    Copy the files in the Leaflet subfolder to the same folder as your map.
+
+.TP
+.BR \-\-buildpyramid " " \fIbuildpyramid\fR
+    Together with --leaflet, build a zoom pyramid for faster zooming/loading of the generated map.
+
+
+.TP
 .BR \-\-extent " " \fIextent\fR
 Dont render the image, just print the extent of the map that would be generated, in the same format as the geometry above.
 

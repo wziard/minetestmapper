@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <vector>
+#include <math.h>
 
 #include "TileGenerator.h"
 #include "config.h"
@@ -81,6 +82,7 @@ TileGenerator::TileGenerator():
 	m_shading(true),
 	m_leaflet(false),
 	m_dontWriteEmpty(false),
+	m_buildPyramid(false),
 	m_backend(""),
 	m_xBorder(0),
 	m_yBorder(0),
@@ -185,6 +187,11 @@ void TileGenerator::setLeaflet(bool leaflet)
 	m_leaflet = leaflet;
 }
 
+void TileGenerator::setBuildPyramid(bool pyramid)
+{
+	m_buildPyramid = pyramid;
+}
+
 void TileGenerator::setBackend(std::string backend)
 {
 	m_backend = backend;
@@ -251,10 +258,6 @@ void TileGenerator::setDontWriteEmpty(bool f)
 
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
-	if (m_leaflet)
-	{
-		outputLeafletCode(output);
-	}
 
 	string input_path = input;
 	if (input_path[input.length() - 1] != PATH_SEPARATOR) {
@@ -294,6 +297,22 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 		tilePositions();
 
+		// round xMax/zMax tot integer number of tiles
+		m_xMax = m_xMin + m_numTilesX * m_tileW;
+		m_zMax = m_zMin + m_numTilesY * m_tileH;
+
+		int maxZoomLevel = 0;
+		if (m_buildPyramid)
+		{
+			int maxDimX = m_xMax > -m_xMin ? m_xMax : -m_xMin;
+			int maxDimY = m_zMax > -m_zMin ? m_zMax : -m_zMin;
+			int maxDim = maxDimX > maxDimY ? maxDimX : maxDimY;
+
+			maxZoomLevel =  static_cast<int>(log2(maxDim / m_tileW)) + 1;
+		}
+
+
+
 		int trueXMin = m_xMin;
 		int trueZMin = m_zMin;
 
@@ -322,8 +341,16 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 						renderPlayers(input_path);
 					}
 					ostringstream fn;
+					if (m_leaflet)
+					{
+						fn << maxZoomLevel << "_";
+					}
 					fn << x + minTileX << '_' << (flipY * (y + minTileZ)) << '_' << output;
 					writeImage(fn.str());
+					if (m_buildPyramid)
+					{
+						m_availableTiles.insert(Coords(x + minTileX,(flipY * (y + minTileZ))));
+					}
 				}
 			}
 		}
@@ -334,6 +361,15 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			m_image->fill(m_bgColor);
 			writeImage(fn.str());
 		}
+		if (m_buildPyramid)
+		{
+			buildPyramid(output, maxZoomLevel);
+		}
+		if (m_leaflet)
+		{
+			outputLeafletCode(output, maxZoomLevel);
+		}
+
 	}
 	else
 	{
@@ -843,12 +879,12 @@ static char const *leafletMapHtml =
 "<script>\n"
 "	var MineTestMap = L.map('mapid', {\n"
 "	crs: L.CRS.Simple,\n"
-"//	minZoom: -3,\n"
+"//	minZoom: 0,\n"
 "	});\n"
-"	MineTestMap.setView([0.0, 0.0], 0);\n"
-"	L.tileLayer('{x}_{y}_%s', {\n"
+"	MineTestMap.setView([0.0, 0.0], %d);\n"
+"	L.tileLayer('{z}_{x}_{y}_%s', {\n"
 "		minNativeZoom: 0,\n"
-"		maxNativeZoom: 0,\n"
+"		maxNativeZoom: %d,\n"
 "		attribution: 'Minetest World',\n"
 "		tileSize: %d,\n"
 "		errorTileUrl: \"empty_tile_%s\",\n"
@@ -866,11 +902,17 @@ static char const *leafletMapHtml =
 "</html>\n";
 
 
-void TileGenerator::outputLeafletCode(std::string const &output)
+void TileGenerator::outputLeafletCode(std::string const &output, int maxLevel)
 {
 	if (m_tileH != m_tileW)
 	{
 		throw std::runtime_error("For a leaflet map the tiles must be square!");
+		return;
+	}
+
+	if (m_tileH == INT_MAX)
+	{
+		throw std::runtime_error("Can only use --leaflet with --tilesize!");
 		return;
 	}
 
@@ -888,9 +930,73 @@ void TileGenerator::outputLeafletCode(std::string const &output)
 		return;
 	}
 
-	fprintf(out, leafletMapHtml, output.c_str(), m_tileW, output.c_str());
+	fprintf(out, leafletMapHtml, maxLevel, output.c_str(), maxLevel, m_tileW*16, output.c_str());
 
 	fclose(out);
+}
 
+void TileGenerator::buildPyramid(std::string const &fileName, int startLevel)
+{
+	TileSet tilesToGenerate;
+	int level = startLevel;
+
+	while (true)
+	{
+		for (TileSet::iterator t = m_availableTiles.begin(); t != m_availableTiles.end(); t++)
+		{
+			int x = t->first;
+			int y = t->second;
+			if (x >=0)
+				x++;
+			if (y >=0)
+				y++;
+			x = round_multiple_nosign(x, 2) / 2;
+			y = round_multiple_nosign(y, 2) / 2;
+			if (x > 0)
+				x--;
+			if (y > 0)
+				y--;
+
+			tilesToGenerate.insert(Coords(x, y));
+		}
+
+		int halfW = m_mapWidth/2;
+		int halfH = m_mapHeight/2;
+		for (TileSet::iterator g = tilesToGenerate.begin(); g != tilesToGenerate.end(); g++)
+		{
+			m_image->fill(m_bgColor);
+			int x = g->first;
+			int y = g->second;
+			for (int i = 0; i < 2 ; i++)
+			{
+				for (int j = 0; j < 2; j++)
+				{
+					if (m_availableTiles.find(Coords(2*x+i, 2*y+j)) != m_availableTiles.end())
+					{
+						std::ostringstream f;
+						f << level << "_" << (2*x+i) << "_" << (2*y+j) << "_" << fileName;
+						Image src(f.str());
+						src.scaleBlit(m_image, i*halfW, j*halfH, halfW, halfH);
+					}
+				}
+			}
+			std::ostringstream f;
+			f << (level-1) << "_" << x << "_" << y << "_" << fileName;
+			m_image->save(f.str());
+			cout << "Wrote image " << f.str() << endl;
+		}
+
+		std::cout << "generated pyramid level " << (level -1) << endl;
+		level--;
+
+		if (!level)
+		{
+			return; // we're done
+		}
+
+		m_availableTiles = tilesToGenerate;
+		tilesToGenerate.clear();
+
+	}
 
 }

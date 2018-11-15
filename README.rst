@@ -103,6 +103,13 @@ tilesize:
     a multiple of 16. The filenames will be created in the form <x>_<y>_<filename>, where <x> and <y>
     are the tile numbers and <filename> is the name specified with -o. Skip empty tiles by also specifying --noemptyimage.
 
+leaflet:
+    Together with --tilesize, output tiles in a leaflet-compaitble numbering and also output a html file to display the map.
+    Copy the files in the Leaflet subfolder to the same folder as your map.
+
+buildpyramid:
+    Together with --leaflet, build a zoom pyramid for faster zooming/loading of the generated map.
+
 zoom:
     Apply zoom to drawn nodes by enlarging them to n*n squares, e.g. ``--zoom 4``
 
