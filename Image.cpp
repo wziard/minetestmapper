@@ -74,7 +74,7 @@ void Image::setPixel(int x, int y, const Color &c)
 	m_image->tpixels[y][x] = color2int(c);
 }
 
-Color Image::getPixel(int x, int y)
+Color Image::getPixel(int x, int y) const
 {
 	SIZECHECK_FUZZY(x, y);
 	return int2color(m_image->tpixels[y][x]);
@@ -106,7 +106,7 @@ void Image::drawCircle(int x, int y, int diameter, const Color &c)
 	gdImageArc(m_image, x, y, diameter, diameter, 0, 360, color2int(c));
 }
 
-void Image::save(const std::string &filename)
+void Image::save(const std::string &filename) const
 {
 #if (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION == 1 && GD_RELEASE_VERSION >= 1) || (GD_MAJOR_VERSION == 2 && GD_MINOR_VERSION > 1) || GD_MAJOR_VERSION > 2
 	const char *f = filename.c_str();
@@ -128,6 +128,23 @@ void Image::save(const std::string &filename)
 #endif
 }
 
+Image::Image(std::string const &fileName)
+{
+	m_image = gdImageCreateFromFile(fileName.c_str());
+
+	if (!m_image)
+	{
+		std::ostringstream oss;
+		oss << "Error loading image file: " << fileName;
+		throw std::runtime_error(oss.str());
+	}
+}
+
+
+void Image::scaleBlit(Image *to, int x, int y, int w, int h) const
+{
+	gdImageCopyResampled(to->m_image, m_image, x,y, 0,0, w, h, gdImageSX(m_image),gdImageSY(m_image));
+}
 
 void Image::fill(Color &c)
 {
