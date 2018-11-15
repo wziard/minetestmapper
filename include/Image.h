@@ -16,16 +16,18 @@ struct Color {
 
 class Image {
 public:
+	Image(const std::string &fileName);
 	Image(int width, int height);
 	~Image();
 
+	void scaleBlit(Image *to, int x, int y, int w, int h) const;
 	void setPixel(int x, int y, const Color &c);
-	Color getPixel(int x, int y);
+	Color getPixel(int x, int y) const;
 	void drawLine(int x1, int y1, int x2, int y2, const Color &c);
 	void drawText(int x, int y, const std::string &s, const Color &c);
 	void drawFilledRect(int x, int y, int w, int h, const Color &c);
 	void drawCircle(int x, int y, int diameter, const Color &c);
-	void save(const std::string &filename);
+	void save(const std::string &filename) const;
 	void fill(Color &c);
 
 private:
