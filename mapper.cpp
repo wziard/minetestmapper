@@ -31,6 +31,7 @@ void usage()
 			"  --geometry x:y+w+h\n"
 			"  --tilesize wxh\n"
 			"  --leaflet\n"
+			"  --buildpyramid\n"
 			"  --extent\n"
 			"  --zoom <zoomlevel>\n"
 			"  --colors <colors.txt>\n"
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
 		{"scales", required_argument, 0, 'f'},
 		{"noemptyimage", no_argument, 0, 'n'},
 		{"leaflet", no_argument, 0, 'l'},
+		{"buildpyramid", no_argument, 0, 'B'},
 		{0, 0, 0, 0}
 	};
 
@@ -151,6 +153,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'l':
 				generator.setLeaflet(true);
+				break;
+			case 'B':
+				generator.setBuildPyramid(true);
 				break;
 			case 'd':
 				generator.setBackend(optarg);

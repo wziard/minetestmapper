@@ -57,7 +57,13 @@ struct BitmapThing { // 16x16 bitmap
 };
 
 typedef std::list<std::pair<int, int> > PositionsList;
+typedef std::pair<int16_t, int16_t> Coords;
 
+struct Coords_hash {
+    inline std::size_t operator()(const Coords &v) const {
+        return std::hash<int>()((static_cast<int>(v.first) << 16) + static_cast<int>(v.second));
+    }
+};
 
 class TileGenerator
 {
@@ -65,10 +71,12 @@ private:
 #if __cplusplus >= 201103L
 	typedef std::unordered_map<std::string, ColorEntry> ColorMap;
 	typedef std::unordered_set<std::string> NameSet;
+	typedef std::unordered_set<Coords, Coords_hash>  TileSet;
 	typedef std::unordered_map<int, PositionsList> TileMap;
 #else
 	typedef std::map<std::string, ColorEntry> ColorMap;
 	typedef std::set<std::string> NameSet;
+	typedef std::set<Coords, Coords_hash>   TileSet;
 	typedef std::map<int, PositionsList> TileMap;
 #endif
 
@@ -85,6 +93,7 @@ public:
 	void setDrawAlpha(bool drawAlpha);
 	void setShading(bool shading);
 	void setLeaflet(bool leaflet);
+	void setBuildPyramid(bool pyramid);
 	void setGeometry(int x, int y, int w, int h);
 	void setTileSize(int w, int h);
 	void setMinY(int y);
@@ -119,7 +128,8 @@ private:
 	void setZoomed(int x, int y, Color color);
 
 private:
-	void outputLeafletCode(std::string const &output);
+	void outputLeafletCode(std::string const &output, int maxZoomLevel);
+	void buildPyramid(std::string const &baseName, int startLevel);
 	Color m_bgColor;
 	Color m_scaleColor;
 	Color m_originColor;
@@ -131,6 +141,7 @@ private:
 	bool m_shading;
 	bool m_leaflet;
 	bool m_dontWriteEmpty;
+	bool m_buildPyramid;
 
 	std::string m_backend;
 	int m_xBorder, m_yBorder;
@@ -167,6 +178,9 @@ private:
 
 	int m_zoom;
 	uint m_scales;
+	// stuff for pyramid building
+	TileSet m_availableTiles;
+
 }; // class TileGenerator
 
 #endif // TILEGENERATOR_HEADER
