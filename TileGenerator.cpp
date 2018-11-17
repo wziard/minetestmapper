@@ -439,10 +439,10 @@ void TileGenerator::createImage()
 	m_mapWidth = (m_xMax - m_xMin + 1);
 	m_mapHeight = (m_zMax - m_zMin + 1);
 
-	if (m_mapWidth > m_tileW)
+	if (m_mapWidth < INT_MAX)
 		m_mapWidth = m_tileW;
 
-	if (m_mapHeight > m_tileH)
+	if (m_mapHeight < INT_MAX)
 		m_mapHeight = m_tileH;
 
 	m_mapWidth *= 16;
