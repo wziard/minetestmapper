@@ -410,8 +410,9 @@ void TileGenerator::createImage()
 
 void TileGenerator::renderMap()
 {
-	BlockDecoder blk;
+	BlockDecoder blk(m_markers.size() > 0);
 	std::list<int> zlist = getZValueList();
+
 	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
 		int zPos = *zPosition;
 		std::map<int16_t, BlockList> blocks;
@@ -474,7 +475,13 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 
 				if (m_markers.count(name))
 				{
-					cout << name << " " << x << " " << y << " " << z << endl;
+					cout << "Marker " << name << " " << (pos.x*16 + x) << " " << (pos.y * 16 + y) << " " << (pos.z * 16 + z) << endl;
+					BlockDecoder::NodeMetaData const & nm = blk.getNodeMetaData(x,y,z);
+					for (BlockDecoder::NodeMetaData::const_iterator i = nm.begin(); i != nm.end(); i++)
+					{
+						cout << '"' << i->first << '"' << ":" <<   '"' << i->second << '"' << endl;
+					}
+					cout << "EndMarker" << endl;
 				}
 
 				ColorMap::const_iterator it = m_colorMap.find(name);
