@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -10,6 +11,12 @@ static inline uint16_t readU16(const unsigned char *data)
 {
 	return data[0] << 8 | data[1];
 }
+
+static inline uint32_t readU32(const unsigned char *data)
+{
+	return data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
+}
+
 
 static int readBlockContent(const unsigned char *mapData, u8 version, unsigned int datapos)
 {
@@ -27,7 +34,8 @@ static int readBlockContent(const unsigned char *mapData, u8 version, unsigned i
 	throw std::runtime_error(oss.str());
 }
 
-BlockDecoder::BlockDecoder()
+BlockDecoder::BlockDecoder(bool withMetaData)
+	: m_withMetaData(withMetaData)
 {
 	reset();
 }
@@ -38,6 +46,7 @@ void BlockDecoder::reset()
 	m_blockIgnoreId = -1;
 	m_nameMap.clear();
 
+	m_metaData.clear();
 	m_version = 0;
 	m_mapData = ustring();
 }
@@ -63,8 +72,73 @@ void BlockDecoder::decode(const ustring &datastr)
 	ZlibDecompressor decompressor(data, length);
 	decompressor.setSeekPos(dataOffset);
 	m_mapData = decompressor.decompress();
-	decompressor.decompress(); // unused metadata
+	ustring metaData = decompressor.decompress(); // unused metadata
 	dataOffset = decompressor.seekPos();
+
+	if (m_withMetaData && version >= 27)
+	{
+		unsigned char const *md = metaData.c_str();
+		unsigned char const *metaDataEnd = md + metaData.size();
+		int metaDataVersion = md[0];
+		md++;
+
+		if (metaDataVersion)
+		{
+			int metaDataCount = readU16(md);
+			md+=2;
+			for (int i = 0; i < metaDataCount ; i++)
+			{
+				int position = readU16(md);
+				md+=2;
+
+				unsigned int numVars = readU32(md);
+				md+=4;
+
+				NodeMetaData nmd;
+				for (unsigned var = 0; var < numVars; var++)
+				{
+						size_t keyLen = readU16(md);
+						md+=2;
+						std::string key((char const *)md, keyLen);
+						md+= keyLen;
+						size_t valueLen = readU32(md);
+						md+=4;
+						std::string value((char const *)md, valueLen);
+						nmd.push_back(std::pair<std::string, std::string>(key, value));
+						md+= valueLen;
+						if (metaDataVersion > 1)
+						{
+							md++; // skip priv flag
+						}
+				}
+				m_metaData[position] = nmd;
+
+				if (md < metaDataEnd && !strncmp("List", reinterpret_cast<const char *>(md), 4))   // skip inventory for now
+				{
+					while (true)
+					{
+						unsigned char const *start = md;
+						while (*md != '\n')
+						{
+							md++;
+							if (md >= metaDataEnd)
+							{
+								std::cout << "Invalid metadata in Block!";
+								//! thrown runtime error
+							}
+						}
+						md++;
+
+						if (!strncmp("EndInventory", reinterpret_cast<char const *>(start), 12))
+						{
+							break;
+						}
+					}
+				}
+
+			}
+		}
+	}
 
 	// Skip unused data
 	if (version <= 21)
@@ -140,3 +214,22 @@ std::string BlockDecoder::getNode(u8 x, u8 y, u8 z) const
 	}
 	return it->second;
 }
+
+
+BlockDecoder::NodeMetaData const &BlockDecoder::getNodeMetaData(u8 x, u8 y, u8 z) const
+{
+	unsigned int position = x + (y << 4) + (z << 8);
+
+	MetaData::const_iterator m = m_metaData.find(position);
+
+	if (m == m_metaData.end())
+	{
+		return s_emptyMetaData;
+	}
+
+	return m->second;
+
+}
+
+BlockDecoder::NodeMetaData BlockDecoder::s_emptyMetaData;
+
