@@ -158,6 +158,7 @@ int main(int argc, char *argv[])
 				break;
 			case 'B':
 				generator.setBuildPyramid(true);
+				break;
 			case 'm':
 				generator.addMarker(optarg);
 				break;
