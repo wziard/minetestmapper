@@ -891,6 +891,7 @@ static char const *leafletMapHtml =
 "\t<!-- link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" /-->\n"
 "\t<link rel=\"stylesheet\" href=\"leaflet.css\" integrity=\"sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==\" crossorigin=\"\"/>\n"
 "\t<script src=\"leaflet.js\" integrity=\"sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==\" crossorigin=\"\"></script>\n"
+"\t<style> .labelclass{position: absolute; background: rgba(255,0,255,0); font-size:20px;}</style>\n"
 "</head>\n"
 "<body>\n"
 "<div id=\"mapid\" style=\"width: 90vw; height: 90vh;\"></div>\n"
@@ -917,6 +918,7 @@ static char const *leafletMapHtml =
 "\t}\n"
 "\tMineTestMap.on('click', onMapClick);\n"
 "</script>\n"
+"<script src=\"markers.js\" defer></script>"
 "</body>\n"
 "</html>\n";
 
