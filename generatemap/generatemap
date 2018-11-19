@@ -1,0 +1,54 @@
+#!/bin/bash
+# this script generates a 'slippy' map of your minetest world, ready to put on a server somewhere (or open locally with any browser).
+# it needs grep,awk,zip,tar,bzip2,ssh (and ssh,tar and bzip2 on your remote server if you want to use the script as-is)
+# I'm not sure if it works if you need a password for ssh because it pipes the compressed world data via stdout back to your local machine.
+
+WORLDNAME=<your-world-folder-name>
+WORLDPATH=<the path to your world folder on your remote server>
+SERVER=<your server>
+
+
+#remove leftovers from aborted runs
+rm -rf tiles world
+
+#setup folder structure
+mkdir world
+mkdir tiles
+cp ../Leaflet/leaflet.js tiles
+cp ../Leaflet/leaflet.css tiles
+cp ../Leaflet/shadow.png ../Leaflet/marker.png tiles
+cp ../colors.txt .
+
+# get the world data from the remote server
+# YOU PROBABLY WANT TO CHANGE THIS
+# this happens to work best for my setup, but any way you can use to cop the files from your
+# world dolder into the world/ subfolder here will work
+cd world
+ssh duitsevm "cd $WORLDPATH/$WORLDNAME && killall -STOP minetestserver ; tar -zc * ; killall -CONT minetestserver" | tar -zxv
+
+
+# now generate the map, and at the same time extract the locations of the markers
+# I (ab)use signs_road:red_street_sign from the display_modpack/signs_road mod you might want to pick another one
+# but then you need to change the scary awk line below to magle the output of minetestmapper to valid javascript.
+# (or use another tool than awkl because while this gets the job done, it is of course atrocious.)
+
+cd ../tiles
+../../minetestmapper -i ../world/ -o map.jpg --colors ../colors.txt --tilesize 1024x1024 --leaflet --buildpyramid --drawalpha --marker signs_road:red_street_sign | tee ../mmOutput
+
+#zip up the map data
+zip -r ../map-`date +"%Y%m%d-%H%M%S"`.zip .
+cd ..
+
+#now mangle the marker data to Leaflet tooltips.
+#first step is easy, filter out all lines containing the word "Marker:"
+cat mmOutput | grep "Marker: " > foundMarkers
+#define an Icon for leaflet to use.
+echo "var markerIcon = L.icon({iconUrl: 'marker.png',shadowUrl: 'shadow.png',iconSize: [40, 40],shadowSize: [40, 40],iconAnchor: [16,16],shadowAnchor: [16,16],popupAnchor: [0,-16]});" > tiles/markers.js
+#this scary awk line finds the two lines that matter and picks out the relevant parts and writes it out as a Leaflet marker with tooltip.
+awk -F"[: ]" '/red_street_sign/{printf "L.marker([" $7 "*mapZoom," $5 "*mapZoom], {icon:markerIcon, opacity:0.0}).bindTooltip("};/\"display_text\"/{print $4  ", {permanent:true, offset:[0,0], className:\"labelclass\",opacity:1}).addTo(MineTestMap);"}' foundMarkers >> tiles/markers.js
+
+#we have the map data here now. a backup never hurts.
+tar -jcvf $WORLDNAME-`date +"%Y%m%d-%H%M%S"`.tar.bz2 world/
+rm -rf mmOutput foundMarkers tiles/ world/
+
+
