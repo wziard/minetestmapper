@@ -908,10 +908,12 @@ static char const *leafletMapHtml =
 "		errorTileUrl: \"empty_tile_%s\",\n"
 "		}).addTo(MineTestMap);\n"
 "	var popup = L.popup();\n"
+"   var mapZoom = %f;\n"
 "	function onMapClick(e) {\n"
+"		var scaledPos = L.latLng(e.latlng.lat / mapZoom, e.latlng.lng / mapZoom);\n"
 "		popup\n"
 "			.setLatLng(e.latlng)\n"
-"			.setContent(\"You clicked the map at \"+ e.latlng.toString())\n"
+"			.setContent(\"You clicked the map at \"+ scaledPos.toString())\n"
 "			.openOn(MineTestMap);\n"
 "	}\n"
 "	MineTestMap.on('click', onMapClick);\n"
@@ -948,7 +950,7 @@ void TileGenerator::outputLeafletCode(std::string const &output, int maxLevel)
 		return;
 	}
 
-	fprintf(out, leafletMapHtml, maxLevel, output.c_str(), maxLevel, m_tileW*16, output.c_str());
+	fprintf(out, leafletMapHtml, maxLevel, output.c_str(), maxLevel, m_tileW*16, output.c_str(), 1.0/pow(2,maxLevel));
 
 	fclose(out);
 }
