@@ -913,7 +913,7 @@ static char const *leafletMapHtml =
 "		popup\n"
 "			.setLatLng(e.latlng)\n"
 "			.setContent(\"You clicked the map at \"+ e.latlng.toString())\n"
-"			.openOn(mymap);\n"
+"			.openOn(MineTestMap);\n"
 "	}\n"
 "	MineTestMap.on('click', onMapClick);\n"
 "</script>\n"
