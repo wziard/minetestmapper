@@ -35,6 +35,7 @@ public:
 private:
 
 	static NodeMetaData s_emptyMetaData;
+	bool m_metaDataValid;
 	NameMap m_nameMap;
 	MetaData m_metaData;
 	int m_blockAirId;

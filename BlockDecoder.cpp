@@ -51,6 +51,19 @@ void BlockDecoder::reset()
 	m_mapData = ustring();
 }
 
+
+static inline bool CheckRange(void const *p, void const *end, char const *msg)
+{
+	if (p > end)
+	{
+		std::cout << msg << std::endl;
+		return false;
+	}
+
+	return true;
+}
+#define CHECKMD(range) (m_metaDataValid = CheckRange(md + range, metaDataEnd, "Premature end of metadata block, incomplete or currupted metadata!"))
+
 void BlockDecoder::decode(const ustring &datastr)
 {
 	const unsigned char *data = datastr.c_str();
@@ -75,67 +88,115 @@ void BlockDecoder::decode(const ustring &datastr)
 	ustring metaData = decompressor.decompress(); // unused metadata
 	dataOffset = decompressor.seekPos();
 
+	m_metaDataValid = false;
+
 	if (m_withMetaData && version >= 27)
 	{
+		m_metaDataValid = true;
 		unsigned char const *md = metaData.c_str();
 		unsigned char const *metaDataEnd = md + metaData.size();
-		int metaDataVersion = md[0];
-		md++;
-
-		if (metaDataVersion)
+		if (CHECKMD(1))
 		{
-			int metaDataCount = readU16(md);
-			md+=2;
-			for (int i = 0; i < metaDataCount ; i++)
-			{
-				int position = readU16(md);
-				md+=2;
+			int metaDataVersion = md[0];
+			md++;
 
-				unsigned int numVars = readU32(md);
-				md+=4;
-
-				NodeMetaData nmd;
-				for (unsigned var = 0; var < numVars; var++)
+			if (metaDataVersion) {
+				if (CHECKMD(2))
 				{
-						size_t keyLen = readU16(md);
-						md+=2;
-						std::string key((char const *)md, keyLen);
-						md+= keyLen;
-						size_t valueLen = readU32(md);
-						md+=4;
-						std::string value((char const *)md, valueLen);
-						nmd.push_back(std::pair<std::string, std::string>(key, value));
-						md+= valueLen;
-						if (metaDataVersion > 1)
-						{
-							md++; // skip priv flag
-						}
-				}
-				m_metaData[position] = nmd;
-
-				if (md < metaDataEnd && !strncmp("List", reinterpret_cast<const char *>(md), 4))   // skip inventory for now
-				{
-					while (true)
+					int metaDataCount = readU16(md);
+					md+=2;
+					for (int i = 0; i < metaDataCount ; i++)
 					{
-						unsigned char const *start = md;
-						while (*md != '\n')
+						if (!CHECKMD(2)) {
+							break;
+						}
+						int position = readU16(md);
+						if (position >= 0xFFF)
 						{
-							md++;
-							if (md >= metaDataEnd)
-							{
-								std::cout << "Invalid metadata in Block!";
-								//! thrown runtime error
+							std::cout << "invalid position in NodeMetaData. Corrupted metadata?, skipping the rest of the metadata for this block." << std::endl;
+							m_metaDataValid = false;
+							break;
+						}
+						md+=2;
+
+						if (!CHECKMD(4)) {
+							break;
+						}
+						unsigned int numVars = readU32(md);
+						md+=4;
+
+						NodeMetaData nmd;
+						for (unsigned var = 0; var < numVars; var++)
+						{
+							if (!CHECKMD(2)) {
+								break;
+							}
+							size_t keyLen = readU16(md);
+							md+=2;
+							if (!CHECKMD(keyLen)) {
+								break;
+							}
+
+							std::string key((char const *)md, keyLen);
+							md+= keyLen;
+							if (!CHECKMD(4)) {
+								break;
+							}
+							size_t valueLen = readU32(md);
+							md+=4;
+							if (!CHECKMD(valueLen)) {
+								break;
+							}
+							std::string value((char const *)md, valueLen);
+							nmd.push_back(std::pair<std::string, std::string>(key, value));
+							md+= valueLen;
+							if (metaDataVersion > 1) {
+								if (!CHECKMD(1)) {
+									break;
+								}
+								md++; // skip priv flag
 							}
 						}
-						md++;
 
-						if (!strncmp("EndInventory", reinterpret_cast<char const *>(start), 12))
+						// Sometimes there's an "EndInventory\n" at the end of the metadata strings without preceding "List".
+						// I can't really se why that happens from minetest's code, but it happens, so skip it.
+						while (md+13 <= metaDataEnd && !strncmp("EndInventory\n",reinterpret_cast<const char *>(md), 13))
 						{
+							md+=13;
+						}
+
+						if (md + 4 <= metaDataEnd && !strncmp("List", reinterpret_cast<const char *>(md), 4))   // skip inventory for now
+						{
+							while (true)
+							{
+								unsigned char const *start = md;
+								while (*md != '\n')
+								{
+									if (!CHECKMD(1)) {
+										break;
+									}
+									md++;
+								}
+								CHECKMD(1);
+								md++;
+
+								if (!m_metaDataValid)
+								{
+									break;
+								}
+
+								if (!strncmp("EndInventory\n", reinterpret_cast<char const *>(start), 13))
+								{
+									break;
+								}
+							}
+						}
+						m_metaData[position] = std::move(nmd);
+						if (!m_metaDataValid) {
 							break;
 						}
 					}
 				}
-
 			}
 		}
 	}
