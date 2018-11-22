@@ -31,7 +31,7 @@ static inline Color int2color(int c)
 	c2.g = (c >> 8) & 0xff;
 	c2.r = (c >> 16) & 0xff;
 	a = (c >> 24) & 0xff;
-	c2.a = 255 - a;
+	c2.a = 255 - a*255 / gdAlphaMax;
 	return c2;
 }
 
