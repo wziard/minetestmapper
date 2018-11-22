@@ -1155,8 +1155,10 @@ int TileGenerator::renderMapBlockIsometric(BlockDecoder const &blk, BlockPos con
 					c = it->second.to_color();
 				}
 
+				int ll = blk.getLightLevel(x,y,z);
+				ll = (ll &0xF); // get day level
 
-				int my = IsoColoredCube(to, pos.x*16 + x, pos.y*16+y, pos.z*16+z, scale, c, yShift);
+				int my = IsoColoredCube(to, pos.x*16 + x, pos.y*16+y, pos.z*16+z, scale, c.gamma(ll/15.0), yShift);
 
 				minY = my < minY ? my : minY;
 			}
