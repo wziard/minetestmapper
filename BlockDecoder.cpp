@@ -34,6 +34,20 @@ static int readBlockContent(const unsigned char *mapData, u8 version, unsigned i
 	throw std::runtime_error(oss.str());
 }
 
+static int readBlockParams(const unsigned char *mapData, u8 version, unsigned int datapos)
+{
+	if (version >= 24) {
+
+		return (mapData[datapos+4096*2] << 8) | mapData[datapos + 4096*3];
+	} else if (version >= 20) {
+		return mapData[datapos + 4096] << 8 | mapData[datapos + 4096*2]; // for param2 you still need to mask off the content-id part if the content >0x80
+	}
+	std::ostringstream oss;
+	oss << "Unsupported map version " << version;
+	throw std::runtime_error(oss.str());
+}
+
+
 BlockDecoder::BlockDecoder(bool withMetaData)
 	: m_withMetaData(withMetaData)
 {
@@ -293,4 +307,12 @@ BlockDecoder::NodeMetaData const &BlockDecoder::getNodeMetaData(u8 x, u8 y, u8 z
 }
 
 BlockDecoder::NodeMetaData BlockDecoder::s_emptyMetaData;
+
+int BlockDecoder::getLightLevel(u8 x, u8 y, u8 z) const
+{
+	unsigned int position = x + (y << 4) + (z << 8);
+	int lightlevel = readBlockParams(m_mapData.c_str(), m_version, position) >> 8;
+
+	return lightlevel; // we still need ot look up in the metadata if it actually *is* lightlevel
+}
 
