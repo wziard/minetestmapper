@@ -145,6 +145,8 @@ private:
 	int m_geomY;
 	int m_geomX2;
 	int m_geomY2;
+	int m_geomH1;
+	int m_geomH2;
 	int m_tileW;
 	int m_tileH;
 	int m_mapWidth;
