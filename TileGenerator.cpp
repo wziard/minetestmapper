@@ -264,7 +264,8 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 	if (m_tileW < INT_MAX || m_tileH < INT_MAX)
 	{
-		tilePositions();
+
+		sortPositionsIntoTiles();
 
 		int trueXMin = m_xMin;
 		int trueZMin = m_zMin;
@@ -765,7 +766,7 @@ inline void TileGenerator::setZoomed(int x, int y, Color color)
 }
 
 
-void TileGenerator::tilePositions()
+void TileGenerator::sortPositionsIntoTiles()
 {
 	m_numTilesX = round_multiple_nosign(m_xMax - m_xMin + 1, m_tileW) / m_tileW;
 	m_numTilesY = round_multiple_nosign(m_zMax - m_zMin + 1, m_tileH) / m_tileH;
