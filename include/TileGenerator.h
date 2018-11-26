@@ -105,7 +105,7 @@ public:
 	void setZoom(int zoom);
 	void setScales(uint flags);
 	void setDontWriteEmpty(bool f);
-	void tilePositions();
+	void sortPositionsIntoTiles();
 	void addMarker(std::string marker);
 
 private:
