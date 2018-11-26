@@ -3,6 +3,7 @@
 #include <climits>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
@@ -81,6 +82,7 @@ TileGenerator::TileGenerator():
 	m_drawAlpha(false),
 	m_shading(true),
 	m_dontWriteEmpty(false),
+	m_isometric(false),
 	m_backend(""),
 	m_xBorder(0),
 	m_yBorder(0),
@@ -182,6 +184,11 @@ void TileGenerator::setShading(bool shading)
 	m_shading = shading;
 }
 
+void TileGenerator::setIsometric(bool iso)
+{
+	m_isometric = iso;
+}
+
 void TileGenerator::setBackend(std::string backend)
 {
 	m_backend = backend;
@@ -254,6 +261,8 @@ void TileGenerator::addMarker(std::string marker)
 
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
+	std::pair<int,int> maxImSize(0,0);
+
 	string input_path = input;
 	if (input_path[input.length() - 1] != PATH_SEPARATOR) {
 		input_path += PATH_SEPARATOR;
@@ -330,9 +339,34 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 					ostringstream fn;
 					fn << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
 					writeImage(fn.str());
+
+					if (t!=m_tiles.end() && m_isometric) {
+						std::pair<int,int> imSize = renderMapIsometric("iso_" + fn.str(), m_tileW, t->second, m_zoom);
+
+						maxImSize.first = maxImSize.first > imSize.first ? maxImSize.first : imSize.first;
+						maxImSize.second = maxImSize.second > imSize.second ? maxImSize.second : imSize.second;
+					}
 				}
 			}
 		}
+
+		if (m_isometric)
+		{
+			ostringstream fn;
+			fn << "iso_metadata_" << output << ".txt";
+
+			std::ofstream os;
+			os.open(fn.str(), std::ios::out);
+
+			os << "MaxImageSize: " << maxImSize.first << " " <<maxImSize.second << std::endl;
+			os << "TileRange: " << minTileX << " " << minTileY << " " << m_numTilesX << " " << m_numTilesY << std::endl;
+			os << "BlockWidth: " << (m_zoom * 4) << std::endl;
+
+			os.flush();
+
+			os.close();
+		}
+
 	}
 	else
 	{
@@ -841,4 +875,165 @@ void TileGenerator::sortPositionsIntoTiles()
 		t->second.push_back(std::pair<int, int>(p->first, p->second));
 	}
 }
+
+// returns lowest y written
+static int IsoColoredCube(Image *im, int x, int y, int z, int scale, Color const&c, int yShift)
+{
+	static double yf = 2 / sqrt(3);
+
+	int xcube[][4] =
+	{
+		{0,0, 2*scale, 2*scale},
+		{2*scale, 2*scale, 4*scale, 4*scale},
+		{0, 2 * scale, 4*scale, 2*scale}
+	};
+
+
+
+	int dy = (int)(scale * yf);
+	int dy2 = (int)(scale * 4 * yf)  - 2 * dy; // spread the rounding error of dy to dy2 so the toal height is closer to the correct height
+	int cubeH = dy*2 + dy2;
+
+	int ycube[][4] =
+	{
+		{dy, dy+dy2, dy2, 0},
+		{0, dy2, dy2+dy , dy},
+		{dy+dy2, 2*dy+dy2, dy+dy2, dy2}
+	};
+
+	int ix = (x + z)*scale*2; // total width = 4*scale
+	int iy = y * dy2 + (z-x)*dy;
+	static Image *cube = NULL;
+	static Color prevColor(0,0,0,0);
+
+	int ih = im->GetHeight();
+
+	if (cube && cube->GetHeight() != cubeH)
+	{
+		delete cube;
+		cube = NULL;
+		prevColor.a = 0;
+	}
+
+	if (!cube)
+	{
+		cube = new Image(4*scale, cubeH);
+		static const Color transparent(0,0,0,0);
+		cube->fill(transparent, true);
+	}
+
+	if (prevColor != c)
+	{
+		static double const brightness[] { 0.8, 0.6, 1.0 };
+		ImagePoint points[4];
+		for (int quad = 0; quad < 3; quad++)
+		{
+			for (int p = 0; p < 4; p++)
+			{
+				points[p].x = xcube[quad][p];
+				points[p].y = cube->GetHeight() - 1 - ycube[quad][p];
+			}
+			Color faceCol = c.gamma(brightness[quad]);
+			if (faceCol.a < 255)
+			{
+				faceCol.a /=4; //! hack to make stuff more transparent, because ismetric layers a lot more than flat
+			}
+			cube->drawFilledPolygon(4, points, faceCol, true);
+		}
+		prevColor = c;
+//		cube->save("test.png");
+	}
+	cube->blit(im,ix, ih -1 -iy - yShift);
+
+	return ih - 1 - iy -yShift;
+
+}
+
+int TileGenerator::renderMapBlockIsometric(BlockDecoder const &blk, BlockPos const &pos, Image *to, int scale, int yShift)
+{
+	int minY = INT_MAX;
+	for (int z = 15; z >=0; z--) {
+		for (int x = 0; x < 16 ; x++) {
+
+			for (int y = 0; y < 16; y++) {
+				string name = blk.getNode(x, y, z);
+				if (name == "")
+					continue;
+				ColorMap::const_iterator it = m_colorMap.find(name);
+
+				Color c(1,1,1);
+				if (it != m_colorMap.end()) {
+					c = it->second.to_color();
+				}
+
+
+				int my = IsoColoredCube(to, pos.x*16 + x, pos.y*16+y, pos.z*16+z, scale, c, yShift);
+
+				minY = my < minY ? my : minY;
+			}
+		}
+	}
+
+	return minY;
+
+}
+
+std::pair<int,int> TileGenerator::renderMapIsometric(std::string const &fileName, int tileSize, PositionsList &positions,int scale)
+{
+	Image image(tileSize * 16 * scale*4, (tileSize + (m_yMax - m_yMin + 1)) * 16 * scale * 4 /sqrt(3));
+	int yShift = (tileSize * 16 + 1) * scale * 2 / sqrt(3);
+	Color transparent(0,0,0,0);
+	image.fill(transparent, true);
+	BlockDecoder blk;
+	std::list<int> zlist = getZValueList(positions);
+
+	int minY = INT_MAX;
+	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
+		int zPos = *zPosition;
+		std::map<int16_t, BlockList> blocks;
+		std::cout << 'Z';
+		m_db->getBlocksOnZ(blocks, zPos);
+		for (PositionsList::const_iterator position = positions.begin(); position != positions.end(); ++position) {
+			if (position->second != zPos)
+				continue;
+			std::cout << 'X'  << std::flush;
+
+			int xPos = position->first;
+			blocks[xPos].sort();
+			const BlockList &blockStack = blocks[xPos];
+			for (BlockList::const_reverse_iterator it = blockStack.rbegin(); it != blockStack.rend(); ++it) {
+				BlockPos pos = it->first;
+
+				if (pos.y * 16 < m_geomH1 || pos.y * 16 > m_geomH2)
+					continue;
+
+				pos.y -= m_yMin;
+				pos.z -= m_zMin;
+				pos.x -= m_xMin;
+
+				blk.reset();
+				blk.decode(it->second);
+				if (blk.isEmpty())
+					continue;
+
+				int my = renderMapBlockIsometric(blk, pos, &image, scale, yShift);
+
+				minY = my < minY ? my : minY;
+			}
+		}
+		std::cout << std::endl;
+	}
+
+	if (minY < INT_MAX)
+	{
+		image.crop(0, minY, image.GetWidth(), image.GetHeight());
+		image.save(fileName);
+		std::cout << "Wrote iso " << fileName << std::endl;
+
+		return std::pair<int,int>(image.GetWidth(), image.GetHeight());
+	}
+
+	return std::pair<int,int>(0,0);
+}
+
 

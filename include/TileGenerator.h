@@ -97,6 +97,7 @@ public:
 	void setDontWriteEmpty(bool f);
 	void sortPositionsIntoTiles();
 	void addMarker(std::string marker);
+	void setIsometric(bool iso);
 
 private:
 	void parseColorsStream(std::istream &in);
@@ -118,6 +119,8 @@ private:
 	int getImageY(int val, bool absolute=false) const;
 	void setZoomed(int x, int y, Color color);
 
+	int renderMapBlockIsometric(BlockDecoder const &blk, BlockPos const &pos, Image *to, int scale, int yShift);
+	std::pair<int, int> renderMapIsometric(std::string const &fileName, int tileSize, PositionsList &positions, int scale);
 private:
 	Color m_bgColor;
 	Color m_scaleColor;
@@ -129,6 +132,7 @@ private:
 	bool m_drawAlpha;
 	bool m_shading;
 	bool m_dontWriteEmpty;
+	bool m_isometric;
 	std::string m_backend;
 	int m_xBorder, m_yBorder;
 
