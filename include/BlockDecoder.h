@@ -29,6 +29,7 @@ public:
 	void decode(const ustring &data);
 	bool isEmpty() const;
 	std::string getNode(u8 x, u8 y, u8 z) const; // returns "" for air, ignore and invalid nodes
+	int getLightLevel(u8 x, u8 y, u8 z) const; // returns "" for air, ignore and invalid nodes
 
 	NodeMetaData const &getNodeMetaData(u8 x, u8 y, u8 z) const;
 
