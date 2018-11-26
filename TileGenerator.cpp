@@ -93,12 +93,14 @@ TileGenerator::TileGenerator():
 	m_xMax(INT_MIN),
 	m_zMin(INT_MAX),
 	m_zMax(INT_MIN),
-	m_yMin(-30000),
-	m_yMax(30000),
+	m_yMin(INT_MAX),
+	m_yMax(INT_MIN),
 	m_geomX(-2048),
 	m_geomY(-2048),
 	m_geomX2(2048),
 	m_geomY2(2048),
+	m_geomH1(-30000),
+	m_geomH2(30000),
 	m_tileW(INT_MAX),
 	m_tileH(INT_MAX),
 	m_zoom(1),
@@ -215,12 +217,12 @@ void TileGenerator::setTileSize(int w, int h)
 
 void TileGenerator::setMinY(int y)
 {
-	m_yMin = y;
+	m_geomH1 = y;
 }
 
 void TileGenerator::setMaxY(int y)
 {
-	m_yMax = y;
+	m_geomH2 = y;
 }
 
 void TileGenerator::parseColorsFile(const std::string &fileName)
@@ -475,7 +477,7 @@ void TileGenerator::loadBlocks()
 		if (pos.x < m_geomX || pos.x >= m_geomX2 || pos.z < m_geomY || pos.z >= m_geomY2)
 			continue;
 		// Check that it's between --min-y and --max-y
-		if (pos.y * 16 < m_yMin || pos.y * 16 > m_yMax)
+		if (pos.y * 16 < m_geomH1 || pos.y * 16 > m_geomH2)
 			continue;
 		// Adjust minimum and maximum positions to the nearest block
 		if (pos.x < m_xMin)
@@ -487,6 +489,12 @@ void TileGenerator::loadBlocks()
 			m_zMin = pos.z;
 		if (pos.z > m_zMax)
 			m_zMax = pos.z;
+
+		if (pos.y < m_yMin)
+			m_yMin = pos.y;
+		if (pos.y > m_yMax)
+			m_yMax = pos.y;
+
 		m_positions.push_back(std::pair<int, int>(pos.x, pos.z));
 	}
 	m_positions.sort();
@@ -595,8 +603,8 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 {
 	int xBegin = (pos.x - m_xMin) * 16;
 	int zBegin = (m_zMax - pos.z) * 16;
-	int minY = (pos.y * 16 > m_yMin) ? 0 : m_yMin - pos.y * 16;
-	int maxY = (pos.y * 16 < m_yMax) ? 15 : m_yMax - pos.y * 16;
+	int minY = (pos.y * 16 > m_geomH1) ? 0 : m_geomH1 - pos.y * 16;
+	int maxY = (pos.y * 16 < m_geomH2) ? 15 : m_geomH2 - pos.y * 16;
 	for (int z = 0; z < 16; ++z) {
 		int imageY = zBegin + 15 - z;
 		for (int x = 0; x < 16; ++x) {
@@ -798,7 +806,7 @@ void TileGenerator::renderPlayers(const std::string &inputPath)
 			continue;
 
 		}
-		if (player->y < m_yMin || player->y > m_yMax)
+		if (player->y < m_geomH1 || player->y > m_geomH2)
 			continue;
 		int imageX = getImageX(player->x, true),
 			imageY = getImageY(player->z, true);
