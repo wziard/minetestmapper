@@ -286,7 +286,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 	if (m_tileW < INT_MAX || m_tileH < INT_MAX)
 	{
 		int minTileX = 0;
-		int minTileZ = 0;
+		int minTileY = 0;
 
 		int flipY = 1;
 		if (m_leaflet)
@@ -298,7 +298,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			// so in tile indices +y is pointing down, while in map coordinates it is pointing up (go figure, but whatever)
 			// this means tile 0_0_ is the tile with the origin in the top-left corner.
 			minTileX = m_xMin / m_tileW;
-			minTileZ = m_zMin / m_tileH + 1;
+			minTileY = m_zMin / m_tileH + 1;
 			flipY = -1;
 		}
 
@@ -352,11 +352,11 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 					{
 						fn << maxZoomLevel << "_";
 					}
-					fn << x + minTileX << '_' << (flipY * (y + minTileZ)) << '_' << output;
+					fn << x + minTileX << '_' << (flipY * (y + minTileY)) << '_' << output;
 					writeImage(fn.str());
 					if (m_buildPyramid)
 					{
-						m_availableTiles.insert(Coords(x + minTileX,(flipY * (y + minTileZ))));
+						m_availableTiles.insert(Coords(x + minTileX,(flipY * (y + minTileY))));
 					}
 				}
 			}
