@@ -37,6 +37,7 @@ void usage()
 			"  --colors <colors.txt>\n"
 			"  --scales [t][b][l][r]\n"
 			"  --marker <string>\n"
+			"  --isometric  \n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
 }
@@ -97,6 +98,7 @@ int main(int argc, char *argv[])
 		{"noemptyimage", no_argument, 0, 'n'},
 		{"leaflet", no_argument, 0, 'l'},
 		{"buildpyramid", no_argument, 0, 'B'},
+		{"isometric", no_argument, 0, 'I'},
 		{0, 0, 0, 0}
 	};
 
@@ -228,6 +230,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'n':
 				generator.setDontWriteEmpty(true);
+				break;
+			case 'I':
+				generator.setIsometric(true);
 				break;
 			default:
 				exit(1);
