@@ -264,6 +264,10 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 	if (m_tileW < INT_MAX || m_tileH < INT_MAX)
 	{
+		m_xMin = round_multiple_nosign(m_xMin, m_tileW);
+		m_zMin = round_multiple_nosign(m_zMin, m_tileH);
+		int minTileX = m_xMin / m_tileW;
+		int minTileY = m_zMin / m_tileH;
 
 		sortPositionsIntoTiles();
 
@@ -295,7 +299,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 						renderPlayers(input_path);
 					}
 					ostringstream fn;
-					fn << x << '_' << y << '_' << output;
+					fn << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
 					writeImage(fn.str());
 				}
 			}
