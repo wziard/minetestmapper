@@ -280,11 +280,19 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 
 		mf.open(mfn.str().c_str());
 
-		mf << "BaseName: " << output << std::endl;
-		mf << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
-		mf << "MinTile: " << minTileX << " " << minTileY << std::endl;
-		mf << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
-		mf.close();
+		if (mf.is_open())
+		{
+
+			mf << "BaseName: " << output << std::endl;
+			mf << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
+			mf << "MinTile: " << minTileX << " " << minTileY << std::endl;
+			mf << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
+			mf.close();
+		}
+		else
+		{
+			std::cerr << "Warning: could not write to '" << mfn.str() << "'!" << std::endl;
+		}
 
 		for (int x = 0; x < m_numTilesX; x++)
 		{
