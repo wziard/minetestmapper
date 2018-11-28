@@ -278,7 +278,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 		mfn << "metadata_" << output << ".txt";
 		std::ofstream mf;
 
-		mf.open(mfn.str());
+		mf.open(mfn.str().c_str());
 
 		mf << "BaseName: " << output << std::endl;
 		mf << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
