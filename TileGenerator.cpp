@@ -274,6 +274,18 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 		int trueXMin = m_xMin;
 		int trueZMin = m_zMin;
 
+		std::ostringstream mfn;
+		mfn << "metadata_" << output << ".txt";
+		std::ofstream mf;
+
+		mf.open(mfn.str());
+
+		mf << "BaseName: " << output << std::endl;
+		mf << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
+		mf << "MinTile: " << minTileX << " " << minTileY << std::endl;
+		mf << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
+		mf.close();
+
 		for (int x = 0; x < m_numTilesX; x++)
 		{
 			for (int y = 0; y < m_numTilesY; y++)
