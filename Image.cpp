@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <gd.h>
 #include <gdfontmb.h>
+#include <math.h>
 
 #include "Image.h"
 
@@ -61,6 +62,8 @@ Image::Image(int width, int height) :
 	m_width(width), m_height(height), m_image(NULL)
 {
 	m_image = gdImageCreateTrueColor(m_width, m_height);
+	gdImageAlphaBlending(m_image, gdEffectAlphaBlend);
+	gdImageSaveAlpha(m_image, true);
 }
 
 Image::~Image()
@@ -149,7 +152,69 @@ void Image::scaleBlit(Image *to, int x, int y, int w, int h) const
 	gdImageCopyResampled(to->m_image, m_image, x,y, 0,0, w, h, gdImageSX(m_image),gdImageSY(m_image));
 }
 
-void Image::fill(Color &c)
+void Image::fill(const Color &c, bool setAlpha)
 {
+	if (setAlpha)
+	{
+			gdImageAlphaBlending(m_image, gdEffectReplace);
+	}
 	gdImageFilledRectangle(m_image, 0, 0, m_width - 1 , m_height - 1, color2int(c));
+	if (setAlpha)
+	{
+			gdImageAlphaBlending(m_image, gdEffectAlphaBlend);
+	}
+}
+
+
+void Image::blit(Image *to, int x, int y)
+{
+	gdImageCopy(to->m_image, m_image, x, y, 0,0, m_width, m_height);
+}
+
+void Image::blit(Image *to, int xs, int ys, int xd, int yd, int w, int h)
+{
+	gdImageCopy(to->m_image, m_image, xd, yd, xs,ys, w, h);
+}
+
+
+void Image::drawFilledPolygon(int nrPoints, ImagePoint const *p, Color const &c, bool setAlpha)
+{
+	if (setAlpha)
+	{
+			gdImageAlphaBlending(m_image, gdEffectReplace);
+	}
+	gdImageFilledPolygon(m_image, const_cast<ImagePoint *>(p), nrPoints, color2int(c));
+	{
+			gdImageAlphaBlending(m_image, gdEffectAlphaBlend);
+	}
+}
+
+Color Color::gamma(double gamma) const
+{
+	Color ret;
+
+	ret.a = a;
+	ret.r = (u8)(255 * pow( r/255., 1.0/gamma));
+	ret.g = (u8)(255 * pow( g/255., 1.0/gamma));
+	ret.b = (u8)(255 * pow( b/255., 1.0/gamma));
+
+	return ret;
+}
+
+void Image::crop(int x1, int y1, int x2, int y2)
+{
+	gdRect r = { x1, y1, x2-x1, y2-y1 };
+
+	gdImagePtr tmp = gdImageCreateTrueColor(r.width, r.height);
+
+	gdImageAlphaBlending(tmp, gdEffectReplace);
+	gdImageCopy(tmp, m_image, 0,0, r.x, r.y, r.width, r.height);
+	gdImageAlphaBlending(tmp, gdEffectAlphaBlend);
+
+	gdImageDestroy(m_image);
+	m_image = tmp;
+	gdImageSaveAlpha(m_image, true);
+
+	m_width = x2 - x1;
+	m_height = y2 - y1;
 }
