@@ -7,14 +7,14 @@
 #      - make clean will delete the object files and the executable
 #      - make veryclean will delete all generated files (also core files and *~ and *.bkp)
 
-CPP_OBJECTS_BARE=
+CPP_OBJECTS_BARE=mergeiso ../Image
 
 C_OBJECTS_BARE=
 
-LIBS=
+LIBS= -lgd
 
 #either define a progname, or a libname.
-PROGNAME=prog
+PROGNAME=mergeiso
 #LIBNAME=
 #LIBNAME_BARE=
 
@@ -23,7 +23,7 @@ CXX=g++
 LD=g++
 AR=ar
 
-CFLAGS = -Wall -Werror -g
+CFLAGS = -Wall -Werror -g  -I../include
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = -g
 ARFLAGS = rcs
