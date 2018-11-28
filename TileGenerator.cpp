@@ -7,7 +7,8 @@
 #include <stdexcept>
 #include <cstring>
 #include <vector>
-
+#include <math.h>
+#include <set>
 #include "TileGenerator.h"
 #include "config.h"
 #include "PlayerAttributes.h"
@@ -242,6 +243,12 @@ void TileGenerator::setDontWriteEmpty(bool f)
 {
 	m_dontWriteEmpty = f;
 }
+
+void TileGenerator::addMarker(std::string marker)
+{
+	m_markers.insert(marker);
+}
+
 
 void TileGenerator::generate(const std::string &input, const std::string &output)
 {
@@ -493,7 +500,8 @@ void TileGenerator::createImage()
 
 void TileGenerator::renderMap(PositionsList &positions)
 {
-	BlockDecoder blk;
+
+	BlockDecoder blk(m_markers.size() > 0);
 	std::list<int> zlist = getZValueList(positions);
 	for (std::list<int>::iterator zPosition = zlist.begin(); zPosition != zlist.end(); ++zPosition) {
 		int zPos = *zPosition;
@@ -554,6 +562,17 @@ void TileGenerator::renderMapBlock(const BlockDecoder &blk, const BlockPos &pos)
 				string name = blk.getNode(x, y, z);
 				if (name == "")
 					continue;
+
+				if (m_markers.count(name))
+				{
+					cout << "Marker: " << name << " " << (pos.x*16 + x) << " " << (pos.y * 16 + y) << " " << (pos.z * 16 + z) << endl;
+					BlockDecoder::NodeMetaData const & nm = blk.getNodeMetaData(x,y,z);
+					for (BlockDecoder::NodeMetaData::const_iterator i = nm.begin(); i != nm.end(); i++)
+					{
+						cout << "Marker: \"" << i->first << '"' << ":" <<   '"' << i->second << '"' << endl;
+					}
+				}
+
 				ColorMap::const_iterator it = m_colorMap.find(name);
 				if (it == m_colorMap.end()) {
 					m_unknownNodes.insert(name);

@@ -34,6 +34,7 @@ void usage()
 			"  --zoom <zoomlevel>\n"
 			"  --colors <colors.txt>\n"
 			"  --scales [t][b][l][r]\n"
+			"  --marker <string>\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
 }
@@ -90,6 +91,7 @@ int main(int argc, char *argv[])
 		{"zoom", required_argument, 0, 'z'},
 		{"colors", required_argument, 0, 'C'},
 		{"scales", required_argument, 0, 'f'},
+		{"marker", required_argument, 0, 'm'},
 		{"noemptyimage", no_argument, 0, 'n'},
 		{0, 0, 0, 0}
 	};
@@ -146,6 +148,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'H':
 				generator.setShading(false);
+				break;
+			case 'm':
+				generator.addMarker(optarg);
 				break;
 			case 'd':
 				generator.setBackend(optarg);
