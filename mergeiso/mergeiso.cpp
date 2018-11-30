@@ -6,7 +6,7 @@
 
 void usage()
 {
-	printf("usage: mergeiso <basename> <w> <h> <inputBlockWidth> <outputTileSize>\n");
+	printf("usage: mergeiso <metadatafile> <outputname> <tilesize>\n");
 	exit(1);
 
 }
@@ -23,25 +23,77 @@ char const *file(int x, int y, char const *basename)
 
 int main(int argc, char **argv)
 {
-	if (argc !=6)
+	if (argc != 4)
 	{
 		usage();
 	}
 
-	std::ifstream meta;
+	std::ifstream mt;
+	mt.open(argv[1], std::ios::in);
 
-	meta.open(std::string("iso_metadata_") + argv[1] + std::string(".txt"), std::ios::in);
+	if (!mt.is_open())
+	{
+		std::cerr << "Couldn't open file '\n" << argv[1] << "'" <<  std::endl;
+		exit(1);
+	}
 
-	std::string maxImSize;
-	int inputTileW, inputTileH;
-	meta >> maxImSize >> inputTileW >> inputTileH;
-	meta.close();
 
-	char const *baseName = argv[1];
-	int tilesW = strtol(argv[2], NULL, 0);
-	int tilesH = strtol(argv[3], NULL, 0);
-	int blockW = strtol(argv[4], NULL, 0);
-	int outTileSize = strtol(argv[5], NULL, 0);
+	std::string baseName;
+	int numTilesX, numTilesY, minTileX, minTileY, tileSizeX, tileSizeY, zoom, maxImW, maxImH;
+	int count=0;
+	while (true)
+	{
+
+		std::string label;
+
+		mt >> label;
+
+		if (mt.eof())
+		{
+			std::cerr << "Error parsing metadata file\n" << std::endl;
+			exit(1);
+		}
+
+		if (label == "BaseName:")
+		{
+			mt >> baseName;
+			count++;
+		}
+		else if (label ==  "NumTiles:")
+		{
+			mt >> numTilesX >> numTilesY;
+			count++;
+		}
+		else if (label ==  "MinTile:")
+		{
+			mt >> minTileX >> minTileY;
+			count++;
+		}
+		else if (label ==  "TileSize:")
+		{
+			mt >> tileSizeX >> tileSizeY;
+			count++;
+		}
+		else if (label ==  "Zoom:")
+		{
+			mt >> zoom;
+			count++;
+		}
+		else if (label ==  "MaxImageSize:")
+		{
+			mt >> maxImW >> maxImH;
+			count++;
+		}
+
+		if (count > 4)
+		{
+			break;
+		}
+	}
+
+
+	int blockW = zoom * 4;
+	int outTileSize = strtol(argv[3], NULL, 0);
 
 
 	Image out(outTileSize, outTileSize);
@@ -49,13 +101,14 @@ int main(int argc, char **argv)
 
 	int blockH = (int)((blockW)/sqrt(3));
 
+	int inputTileW = tileSizeX * blockW;
 
 	int dx = inputTileW/2;
 	int dy = (inputTileW/blockW) * blockH / 2;
 
 
-	int totalMapW = inputTileW + (dx * (tilesW+tilesH));
-	int totalMapH = inputTileH + (dy * (tilesW+tilesH));
+	int totalMapW = inputTileW + (dx * (numTilesX+numTilesY));
+	int totalMapH = inputTileH + (dy * (numTilesX+numTilesY));
 
 
 	int mapTilesW = totalMapW / outTileSize;
@@ -88,13 +141,13 @@ int main(int argc, char **argv)
 			int count = 0;
 			printf(" TILE %d %d\n", x, y);
 
-			for (int ix = 0; ix < tilesW; ix++)
+			for (int ix = 0; ix < numTilesX; ix++)
 			{
-				for (int iy = tilesH -1; iy >= 0; iy--)
+				for (int iy = numTilesY -1; iy >= 0; iy--)
 				{
 
 					int destX = (ix+iy) * dx - x * outTileSize;
-					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - inputTileH - dy* tilesW;
+					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - inputTileH - dy* numTilesX;
  					//, inputTileW, inputTileH};
 					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -inputTileH)
 					{
@@ -106,7 +159,7 @@ int main(int argc, char **argv)
 						Image in(file(ix,iy,baseName));
 
 						destX = (ix+iy) * dx - x * outTileSize;
-						destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - in.GetHeight() - dy* tilesW;
+						destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - in.GetHeight() - dy* numTilesX;
 						if (!(destX >= outTileSize || destY >= outTileSize || destX <= inputTileW || destY <= in.GetHeight()))
 						{
 							count++;
