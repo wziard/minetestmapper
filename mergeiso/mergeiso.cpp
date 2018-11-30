@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
 
 	int totalMapW = inputTileW + (dx * (numTilesX+numTilesY));
-	int totalMapH = inputTileH + (dy * (numTilesX+numTilesY));
+	int totalMapH = maxImH + (dy * (numTilesX+numTilesY));
 
 
 	int mapTilesW = totalMapW / outTileSize;
@@ -132,6 +132,7 @@ int main(int argc, char **argv)
 
 
 
+
 	for (int x = 0; x < mapTilesW; x++)
 	{
 		for (int y = 0; y < mapTilesH; y++)
@@ -147,16 +148,16 @@ int main(int argc, char **argv)
 				{
 
 					int destX = (ix+iy) * dx - x * outTileSize;
-					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - inputTileH - dy* numTilesX;
+					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - maxImH - dy* numTilesX;
  					//, inputTileW, inputTileH};
-					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -inputTileH)
+					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
 					{
 						continue;
 					}
 
 					try
 					{
-						Image in(file(ix,iy,baseName));
+						Image in(file(ix,iy,baseName.c_str()));
 
 						destX = (ix+iy) * dx - x * outTileSize;
 						destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - in.GetHeight() - dy* numTilesX;
