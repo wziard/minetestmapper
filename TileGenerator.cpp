@@ -359,9 +359,12 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			std::ofstream os;
 			os.open(fn.str(), std::ios::out);
 
+			os << "BaseName: " << output << std::endl;
+			os << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
+			os << "MinTile: " << minTileX << " " << minTileY << std::endl;
+			os << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
+			os << "Zoom: " << m_zoom << std::endl;
 			os << "MaxImageSize: " << maxImSize.first << " " <<maxImSize.second << std::endl;
-			os << "TileRange: " << minTileX << " " << minTileY << " " << m_numTilesX << " " << m_numTilesY << std::endl;
-			os << "BlockWidth: " << (m_zoom * 4) << std::endl;
 
 			os.flush();
 
