@@ -287,6 +287,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			mf << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
 			mf << "MinTile: " << minTileX << " " << minTileY << std::endl;
 			mf << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
+			mf << "Zoom: " << m_zoom << std::endl;
 			mf.close();
 		}
 		else
