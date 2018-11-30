@@ -274,6 +274,9 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 		int trueXMin = m_xMin;
 		int trueZMin = m_zMin;
 
+		// write info about the number of tiles and the tile sizes to a text file
+		// which can be used by another utility to generate zoom pyramids and/or
+		// add map annotations for a specific viewer.
 		std::ostringstream mfn;
 		mfn << "metadata_" << output << ".txt";
 		std::ofstream mf;
