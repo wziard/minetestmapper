@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 
 	std::string baseName;
-	int numTilesX, numTilesY, minTileX, minTileY, tileSizeX, tileSizeY, zoom, maxImW, maxImH;
+	int numTilesX, numTilesZ, minTileX, minTileZ, tileSizeX, tileSizeY, zoom, maxImW, maxImH, originHeight;
 	int count=0;
 	while (true)
 	{
@@ -62,12 +62,12 @@ int main(int argc, char **argv)
 		}
 		else if (label ==  "NumTiles:")
 		{
-			mt >> numTilesX >> numTilesY;
+			mt >> numTilesX >> numTilesZ;
 			count++;
 		}
 		else if (label ==  "MinTile:")
 		{
-			mt >> minTileX >> minTileY;
+			mt >> minTileX >> minTileZ;
 			count++;
 		}
 		else if (label ==  "TileSize:")
@@ -85,8 +85,13 @@ int main(int argc, char **argv)
 			mt >> maxImW >> maxImH;
 			count++;
 		}
+		else if (label ==  "OriginHeight:")
+		{
+			mt >> originHeight;
+			count++;
+		}
 
-		if (count > 4)
+		if (count > 6)
 		{
 			break;
 		}
@@ -108,8 +113,8 @@ int main(int argc, char **argv)
 	int dy = (inputTileW/blockW) * blockH / 2;
 
 
-	int totalMapW = inputTileW + (dx * (numTilesX+numTilesY));
-	int totalMapH = maxImH + (dy * (numTilesX+numTilesY));
+	int totalMapW = inputTileW + (dx * (numTilesX+numTilesZ));
+	int totalMapH = maxImH + (dy * (numTilesX+numTilesZ));
 
 
 	int mapTilesW = totalMapW / outTileSize;
@@ -129,8 +134,8 @@ int main(int argc, char **argv)
 	mapTilesW++;
 	mapTilesH++;
 
-	int minMapTileX = (minTileX+1) * dx / outTileSize - 1;
-	int minMapTileY = (minTileY+1) * dy / outTileSize - 1;
+	int minMapTileX = (minTileX + minTileZ) * dx / outTileSize - 1;
+	int minMapTileY = (minTileX - minTileZ) * dy / outTileSize - 1;
 
 //	int inTop = in->h - dy;
 //	int halfHeight = inTop + (totalMapH - inTop) / 2;
@@ -161,27 +166,44 @@ int main(int argc, char **argv)
 
 			for (int ix = minTileX; ix < minTileX + numTilesX; ix++)
 			{
-				for (int iy = minTileY + numTilesY -1; iy >= minTileY; iy--)
+				for (int iy = minTileZ + numTilesZ -1; iy >= minTileZ; iy--)
 				{
+//			for (int ix = 0; ix < 1; ix++)
+//			{
+//				for (int iy = 0; iy >= 0; iy--)
+//				{
+					// this is the position of the left corner of the isometric tile on the output map
 
-					int destX = (ix+iy) * dx - x * outTileSize;
-					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - maxImH - dy* numTilesX;
+					int leftCornerX = (ix + iy) * dx;
+					int leftCornerY = (iy - ix) * dy;
+
+					// now make the current image line up with that
+					// in the image it's at (0, h - originHeight)
+					int destX = leftCornerX - x * outTileSize;
+					// top of image is imh - originHeight heigher than topcorner
+//					int destY = outTileSize - (leftCornerY - y * outTileSize + (maxImH - originHeight)) - 1;
+//					printf("  %d %d:  (%d, %d) (%d, %d)\n", ix, iy, destX, destY, destX + inputTileW, destY - maxImH);
  					//, inputTileW, inputTileH};
-					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
-					{
-						continue;
-					}
+//					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
+//					{
+//						printf("skip\n");
+//						continue;
+//					}
 
 					try
 					{
 						Image in(file(ix,iy,baseName.c_str()));
+						int destY = outTileSize - (leftCornerY - y * outTileSize + (in.GetHeight() - originHeight)) - 1;
 
-						destX = (ix+iy) * dx - x * outTileSize;
-						destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - in.GetHeight() - dy* numTilesX;
-						if (!(destX >= outTileSize || destY >= outTileSize || destX <= inputTileW || destY <= in.GetHeight()))
+						if (!(destY < -in.GetHeight()))
 						{
 							count++;
 							in.blit(&out, destX, destY);
+							printf("JA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+						}
+						else
+						{
+							printf("skip\n");
 						}
 
 					}

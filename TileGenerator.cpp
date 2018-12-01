@@ -365,6 +365,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			os << "TileSize: " << (m_tileW*16) << " " << (m_tileH*16) << std::endl;
 			os << "Zoom: " << m_zoom << std::endl;
 			os << "MaxImageSize: " << maxImSize.first << " " <<maxImSize.second << std::endl;
+			os << "OriginHeight: " << (int)((-m_yMin) * ((4*m_zoom * 2/sqrt(3)) - (int)(m_zoom * 2/sqrt(3))) + (m_tileW * 16 + 1) * m_zoom * 2 / sqrt(3)) << std::endl; // urgh. I really shouldn't repeat this calculation here, but make a proper transform function which is used by both the iso drawing and this
 
 			os.flush();
 
@@ -880,7 +881,7 @@ void TileGenerator::sortPositionsIntoTiles()
 	}
 }
 
-// returns lowest y written
+// returns lowest y written (for cropping the image)
 static int IsoColoredCube(Image *im, int x, int y, int z, int scale, Color const&c, int yShift)
 {
 	static double yf = 2 / sqrt(3);
