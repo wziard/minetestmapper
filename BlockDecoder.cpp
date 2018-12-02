@@ -143,12 +143,17 @@ void BlockDecoder::decode(const ustring &datastr)
 						}
 						md++;
 
-						if (!strncmp("EndInventory", reinterpret_cast<char const *>(start), 12))
+						if (!strncmp("EndInventory\n", reinterpret_cast<char const *>(start), 13))
 						{
 							break;
 						}
 					}
 				}
+				else if (!strncmp("EndInventory\n", reinterpret_cast<char const *>(md), 13))
+				{
+					md += 13;
+				}
+
 
 			}
 		}
