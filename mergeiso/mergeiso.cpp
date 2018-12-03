@@ -168,10 +168,6 @@ int main(int argc, char **argv)
 			{
 				for (int iy = minTileZ + numTilesZ -1; iy >= minTileZ; iy--)
 				{
-//			for (int ix = 0; ix < 1; ix++)
-//			{
-//				for (int iy = 0; iy >= 0; iy--)
-//				{
 					// this is the position of the left corner of the isometric tile on the output map
 
 					int leftCornerX = (ix + iy) * dx;
@@ -181,14 +177,14 @@ int main(int argc, char **argv)
 					// in the image it's at (0, h - originHeight)
 					int destX = leftCornerX - x * outTileSize;
 					// top of image is imh - originHeight heigher than topcorner
-//					int destY = outTileSize - (leftCornerY - y * outTileSize + (maxImH - originHeight)) - 1;
+					int destY = outTileSize - (leftCornerY - y * outTileSize + (maxImH - originHeight)) - 1;
 //					printf("  %d %d:  (%d, %d) (%d, %d)\n", ix, iy, destX, destY, destX + inputTileW, destY - maxImH);
  					//, inputTileW, inputTileH};
-//					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
-//					{
+					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
+					{
 //						printf("skip\n");
-//						continue;
-//					}
+						continue;
+					}
 
 					try
 					{
@@ -199,11 +195,11 @@ int main(int argc, char **argv)
 						{
 							count++;
 							in.blit(&out, destX, destY);
-							printf("JA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+//							printf("JA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 						}
 						else
 						{
-							printf("skip\n");
+//							printf("skip\n");
 						}
 
 					}
