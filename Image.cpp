@@ -167,12 +167,12 @@ void Image::fill(const Color &c, bool setAlpha)
 }
 
 
-void Image::blit(Image *to, int x, int y)
+void Image::blit(Image *to, int x, int y) const
 {
 	gdImageCopy(to->m_image, m_image, x, y, 0,0, m_width, m_height);
 }
 
-void Image::blit(Image *to, int xs, int ys, int xd, int yd, int w, int h)
+void Image::blit(Image *to, int xs, int ys, int xd, int yd, int w, int h) const
 {
 	gdImageCopy(to->m_image, m_image, xd, yd, xs,ys, w, h);
 }

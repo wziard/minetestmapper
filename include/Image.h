@@ -27,8 +27,8 @@ public:
 	~Image();
 
 	void scaleBlit(Image *to, int x, int y, int w, int h) const;
-	void blit(Image *to, int x, int y);
-	void blit(Image *to, int xs, int ys, int xd, int yd, int w, int h);
+	void blit(Image *to, int x, int y) const;
+	void blit(Image *to, int xs, int ys, int xd, int yd, int w, int h) const;
 	void setPixel(int x, int y, const Color &c);
 	Color getPixel(int x, int y) const;
 	void drawLine(int x1, int y1, int x2, int y2, const Color &c);
