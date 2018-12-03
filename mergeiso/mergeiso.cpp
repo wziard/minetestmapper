@@ -142,11 +142,11 @@ int main(int argc, char **argv)
 
 
 	std::ostringstream mfn;
-	mfn << "metadata_" << "retiled.png" << ".txt";
+	mfn << "metadata_" << argv[2] << ".txt";
 	std::ofstream mf;
 
 	mf.open(mfn.str().c_str());
-	mf << "BaseName: " << "retiled.png" << std::endl;
+	mf << "BaseName: " << argv[2] << std::endl;
 	mf << "NumTiles: " << mapTilesW << " " << mapTilesH << std::endl;
 	mf << "MinTile: " << minMapTileX << " " << minMapTileY << std::endl;
 	mf << "TileSize: " << outTileSize << " " << outTileSize << std::endl;
