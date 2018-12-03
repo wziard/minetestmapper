@@ -96,7 +96,7 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 	{
 		assert((maxTileY - minTileY) == 1);
 		std::ostringstream inf;
-		inf << minTileX << "_" << minTileY << "_" << baseName;
+		inf << "tile_" << minTileX << "_" << minTileY << "_" << baseName;
 		try
 		{
 			Image in(inf.str());
