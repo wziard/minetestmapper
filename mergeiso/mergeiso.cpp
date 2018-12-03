@@ -12,11 +12,11 @@ void usage()
 
 }
 
-char const *file(int x, int y, char const *basename)
+char const *file(int x, int y, char const *prefix, char const *basename)
 {
 	static char ret[1024];
 
-	sprintf(ret, "iso_%d_%d_%s", x,y, basename);
+	sprintf(ret, "%s%d_%d_%s", prefix, x,y, basename);
 
 	return ret;
 }
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 
 					try
 					{
-						Image in(file(ix,iy,baseName.c_str()));
+						Image in(file(ix,iy,"iso_", baseName.c_str()));
 						int destY = outTileSize - (leftCornerY - y * outTileSize + (in.GetHeight() - originHeight)) - 1;
 
 						if (!(destY < -in.GetHeight()))
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 
 			if (count)
 			{
-				out.save(file(x, y, "retiled.png"));
+				out.save(file(x, y, "tile_", argv[2]));
 			}
 		}
 	}
