@@ -323,7 +323,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 						renderPlayers(input_path);
 					}
 					ostringstream fn;
-					fn << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
+					fn << "tile_" << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
 					writeImage(fn.str());
 				}
 			}
