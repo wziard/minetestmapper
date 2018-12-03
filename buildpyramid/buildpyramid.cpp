@@ -31,7 +31,7 @@ class LazyImage
 		{
 			if (m_image)
 			{
-				m_image->fill(m_bg);
+				m_image->fill(m_bg, true);
 			}
 		}
 
@@ -91,6 +91,7 @@ class LazyImage
 int buildPyramid(std::string const &baseName, std::string const &out, LazyImage *im, int minTileX,int minTileY, int maxTileX, int maxTileY, int level, int divisor, bool leafletMode)
 {
 	int count = 0;
+	im->wipe();
 
 	if ((maxTileX - minTileX) == 1)
 	{
@@ -116,7 +117,7 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 	}
 	else
 	{
-		LazyImage subTile(im->GetWidth(), im->GetHeight(), Color(255,255,255,0));
+		LazyImage subTile(im->GetWidth(), im->GetHeight(), Color(255,255,255,255));
 
 		int halfX = minTileX + (maxTileX - minTileX)/2;
 		int halfY = minTileY + (maxTileY - minTileY)/2;
@@ -124,7 +125,6 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 		if (c)
 		{
 			im->quarterBlit(subTile, 0, 1);
-			subTile.wipe();
 			count+=c;
 		}
 
@@ -132,7 +132,6 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 		if (c)
 		{
 			im->quarterBlit(subTile, 1, 1);
-			subTile.wipe();
 			count+=c;
 		}
 
@@ -140,7 +139,6 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 		if (c)
 		{
 			im->quarterBlit(subTile, 0, 0);
-			subTile.wipe();
 			count+=c;
 		}
 
@@ -149,7 +147,6 @@ int buildPyramid(std::string const &baseName, std::string const &out, LazyImage 
 		if (c)
 		{
 			im->quarterBlit(subTile, 1, 0);
-			subTile.wipe();
 			count+=c;
 		}
 
