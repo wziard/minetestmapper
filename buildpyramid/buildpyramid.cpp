@@ -7,12 +7,91 @@
 
 void outputLeafletCode(std::string const &output, int maxLevel, int tileSize);
 
-int buildPyramid(std::string const &baseName, std::string const &out, Image *im, int minTileX,int minTileY, int maxTileX, int maxTileY, int level, int divisor, bool leafletMode)
+class LazyImage
+{
+	public:
+		LazyImage(int w, int h, Color const &bg)
+		{
+			m_w = w;
+			m_h = h;
+			m_bg = bg;
+			m_image = NULL;
+		}
+
+		int GetWidth() { return m_w; }
+		int GetHeight() { return m_h; }
+
+		~LazyImage()
+		{
+			delete m_image;
+			m_image = NULL;
+		}
+
+		void wipe()
+		{
+			if (m_image)
+			{
+				m_image->fill(m_bg);
+			}
+		}
+
+		void quarterBlit(LazyImage const & from, int x, int y)
+		{
+			if (!from.m_image)
+			{
+				return;
+			}
+
+			if (!m_image)
+			{
+				m_image = new Image(m_w, m_h);
+				m_image->fill(m_bg);
+			}
+
+			from.m_image->scaleBlit(m_image, x * m_w/2, y*m_h/2, m_w/2, m_h/2);
+		}
+
+		void quarterBlit(Image const & from, int x, int y)
+		{
+			if (!m_image)
+			{
+				m_image = new Image(m_w, m_h);
+				m_image->fill(m_bg);
+			}
+
+			from.scaleBlit(m_image, x * m_w/2, y*m_h/2, m_w/2, m_h/2);
+		}
+
+		void blit(Image const & from, int x, int y)
+		{
+			if (!m_image)
+			{
+				m_image = new Image(m_w, m_h);
+				m_image->fill(m_bg);
+			}
+
+			from.blit(m_image, x, y);
+		}
+
+		void save(std::string const &name)
+		{
+			if (m_image)
+			{
+				m_image->save(name);
+			}
+		}
+	private:
+
+		int m_w, m_h;
+		Color m_bg;
+		Image *m_image;
+
+};
+
+int buildPyramid(std::string const &baseName, std::string const &out, LazyImage *im, int minTileX,int minTileY, int maxTileX, int maxTileY, int level, int divisor, bool leafletMode)
 {
 	int count = 0;
 
-	Color empty(0,0,0,0);
-	im->fill(empty, true);
 	if ((maxTileX - minTileX) == 1)
 	{
 		assert((maxTileY - minTileY) == 1);
@@ -24,7 +103,7 @@ int buildPyramid(std::string const &baseName, std::string const &out, Image *im,
 
 			if (in.GetWidth())
 			{
-				in.blit(im, 0,0);
+				im->blit(in,0,0);
 				count++;
 			}
 		}
@@ -37,28 +116,31 @@ int buildPyramid(std::string const &baseName, std::string const &out, Image *im,
 	}
 	else
 	{
-		Image subTile(im->GetWidth(), im->GetHeight());
+		LazyImage subTile(im->GetWidth(), im->GetHeight(), Color(255,255,255,0));
 
 		int halfX = minTileX + (maxTileX - minTileX)/2;
 		int halfY = minTileY + (maxTileY - minTileY)/2;
 		int c = buildPyramid(baseName, out, &subTile, minTileX, minTileY, halfX, halfY, level +1, divisor / 2, leafletMode);
 		if (c)
 		{
-			subTile.scaleBlit(im, 0, im->GetHeight()/2, im->GetWidth()/2, im->GetHeight() / 2);
+			im->quarterBlit(subTile, 0, 1);
+			subTile.wipe();
 			count+=c;
 		}
 
 		c = buildPyramid(baseName, out, &subTile, halfX,  minTileY, maxTileX, halfY, level +1, divisor / 2, leafletMode);
 		if (c)
 		{
-			subTile.scaleBlit(im, im->GetWidth()/2, im->GetHeight()/2, im->GetWidth()/2, im->GetHeight() / 2);
+			im->quarterBlit(subTile, 1, 1);
+			subTile.wipe();
 			count+=c;
 		}
 
 		c = buildPyramid(baseName, out, &subTile, minTileX, halfY, halfX, maxTileY, level +1, divisor / 2, leafletMode);
 		if (c)
 		{
-			subTile.scaleBlit(im, 0, 0, im->GetWidth()/2, im->GetHeight() / 2);
+			im->quarterBlit(subTile, 0, 0);
+			subTile.wipe();
 			count+=c;
 		}
 
@@ -66,7 +148,8 @@ int buildPyramid(std::string const &baseName, std::string const &out, Image *im,
 		c= buildPyramid(baseName, out, &subTile, halfX,  halfY, maxTileX, maxTileY, level +1, divisor / 2, leafletMode);
 		if (c)
 		{
-			subTile.scaleBlit(im, im->GetWidth()/2, 0, im->GetWidth()/2, im->GetHeight() / 2);
+			im->quarterBlit(subTile, 1, 0);
+			subTile.wipe();
 			count+=c;
 		}
 
@@ -177,7 +260,7 @@ int main(int argc, char **argv)
 	}
 
 
-	Image im(tileSizeX, tileSizeY);
+	LazyImage im(tileSizeX, tileSizeY, Color(255,255,255,0));
 	std::ostringstream of;
 	std::string out(argv[2]);
 
