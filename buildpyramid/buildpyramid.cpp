@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 
 
 	std::string baseName;
-	int numTilesX, numTilesY, minTileX, minTileY, tileSizeX, tileSizeY;
+	int numTilesX, numTilesY, minTileX, minTileY, tileSizeX, tileSizeY, zoom;
 	int count=0;
 	while (true)
 	{
@@ -221,8 +221,13 @@ int main(int argc, char **argv)
 			mt >> tileSizeX >> tileSizeY;
 			count++;
 		}
+		else if (label ==  "Zoom:")
+		{
+			mt >> zoom;
+			count++;
+		}
 
-		if (count >3)
+		if (count >4)
 		{
 			break;
 		}
@@ -234,6 +239,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	tileSizeX *= zoom;
+	tileSizeY *= zoom;
 	int maxDim = numTilesX + minTileX;
 
 	maxDim = -minTileX > maxDim ? -minTileX : maxDim;
