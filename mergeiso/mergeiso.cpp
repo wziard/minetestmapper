@@ -150,7 +150,7 @@ int main(int argc, char **argv)
 	mf << "BaseName: " << argv[2] << std::endl;
 	mf << "NumTiles: " << mapTilesW << " " << mapTilesH << std::endl;
 	mf << "MinTile: " << minMapTileX << " " << minMapTileY << std::endl;
-	mf << "TileSize: " << outTileSize << " " << outTileSize << std::endl;
+	mf << "TileSize: " << outTileSize/zoom << " " << outTileSize/zoom << std::endl;
 	mf << "Zoom: " << zoom << std::endl;
 	mf.close();
 
