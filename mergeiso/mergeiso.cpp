@@ -105,12 +105,13 @@ int main(int argc, char **argv)
 	Image out(outTileSize, outTileSize);
 
 
-	int blockH = (int)((blockW)/sqrt(3));
+	int blockH = 2*(int)(zoom * 2 /sqrt(3));
 
 	int inputTileW = tileSizeX * blockW;
+	int inputTileH = tileSizeX * blockH;
 
 	int dx = inputTileW/2;
-	int dy = (inputTileW/blockW) * blockH / 2;
+	int dy = inputTileH / 2;
 
 
 	int totalMapW = inputTileW + (dx * (numTilesX+numTilesZ));
