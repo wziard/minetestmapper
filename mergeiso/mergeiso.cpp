@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 
 					try
 					{
-						Image in(file(ix,iy,"iso_", baseName.c_str()));
+						Image in(file(ix,iy,"iso_tile_", baseName.c_str()));
 						int destY = outTileSize - (leftCornerY - y * outTileSize + (in.GetHeight() - originHeight)) - 1;
 
 						if (!(destY < -in.GetHeight()))
