@@ -326,26 +326,29 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 				m_xMax = m_xMin + m_tileW - 1;
 				m_zMax = m_zMin + m_tileH -1;
 
-				if (t != m_tiles.end() || !m_dontWriteEmpty)
-				{
-					m_image->fill(m_bgColor);
-					if (t != m_tiles.end())
-						renderMap(t->second);
-					if (m_drawScale) {
-						renderScale();
+				if (t != m_tiles.end() || !m_dontWriteEmpty) {
+					if (!m_isometric)
+					{
+						m_image->fill(m_bgColor);
+						if (t != m_tiles.end())
+							renderMap(t->second);
+						if (m_drawScale) {
+							renderScale();
+						}
+						if (m_drawOrigin) {
+							renderOrigin();
+						}
+						if (m_drawPlayers) {
+							renderPlayers(input_path);
+						}
+						ostringstream fn;
+						fn << "tile_" << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
+						writeImage(fn.str());
 					}
-					if (m_drawOrigin) {
-						renderOrigin();
-					}
-					if (m_drawPlayers) {
-						renderPlayers(input_path);
-					}
-					ostringstream fn;
-					fn << "tile_" << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
-					writeImage(fn.str());
-
 					if (t!=m_tiles.end() && m_isometric) {
-						std::pair<int,int> imSize = renderMapIsometric("iso_" + fn.str(), m_tileW, t->second, m_zoom);
+						ostringstream fn;
+						fn << "iso_tile_" << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
+						std::pair<int,int> imSize = renderMapIsometric(fn.str(), m_tileW, t->second, m_zoom);
 
 						maxImSize.first = maxImSize.first > imSize.first ? maxImSize.first : imSize.first;
 						maxImSize.second = maxImSize.second > imSize.second ? maxImSize.second : imSize.second;
