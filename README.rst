@@ -111,3 +111,6 @@ colors:
 
 scales:
     Draw scales on specified image edges (letters *t b l r* meaning top, bottom, left and right), e.g. ``--scales tbr``
+
+isometric:
+    Draws the map in isometric view.
