@@ -944,7 +944,7 @@ static int IsoColoredCube(Image *im, int x, int y, int z, int scale, Color const
 			Color faceCol = c.gamma(brightness[quad]);
 			if (faceCol.a < 255)
 			{
-				faceCol.a /=4; //! hack to make stuff more transparent, because ismetric layers a lot more than flat
+				faceCol.a /=4; //! hack to make stuff more transparent, because isometric layers a lot more than flat
 			}
 			cube->drawFilledPolygon(4, points, faceCol, true);
 		}
@@ -974,6 +974,7 @@ int TileGenerator::renderMapBlockIsometric(BlockDecoder const &blk, BlockPos con
 					c = it->second.to_color();
 				}
 
+				// shade by height. With rather arbitrarily chosen values which seem to look right on most maps.
 				int h = pos.y*16+y - m_yMin;
 
 				c = c.gamma(.25 +h/100.0);
