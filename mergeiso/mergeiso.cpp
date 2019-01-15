@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <math.h>
 #include "../include/Image.h"
 
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
 
 
 	int totalMapW = inputTileW + (dx * (numTilesX+numTilesY));
-	int totalMapH = inputTileH + (dy * (numTilesX+numTilesY));
+	int totalMapH = maxImH + (dy * (numTilesX+numTilesY));
 
 
 	int mapTilesW = totalMapW / outTileSize;
@@ -125,38 +126,55 @@ int main(int argc, char **argv)
 		mapTilesH++;
 	}
 
+	mapTilesW++;
+	mapTilesH++;
+
+	int minMapTileX = (minTileX+1) * dx / outTileSize - 1;
+	int minMapTileY = (minTileY+1) * dy / outTileSize - 1;
 
 //	int inTop = in->h - dy;
 //	int halfHeight = inTop + (totalMapH - inTop) / 2;
 
 
+	std::ostringstream mfn;
+	mfn << "metadata_" << "retiled.png" << ".txt";
+	std::ofstream mf;
+
+	mf.open(mfn.str().c_str());
+	mf << "BaseName: " << "retiled.png" << std::endl;
+	mf << "NumTiles: " << mapTilesW << " " << mapTilesH << std::endl;
+	mf << "MinTile: " << minMapTileX << " " << minMapTileY << std::endl;
+	mf << "TileSize: " << outTileSize << " " << outTileSize << std::endl;
+	mf << "Zoom: " << zoom << std::endl;
+	mf.close();
 
 
-	for (int x = 0; x < mapTilesW; x++)
+
+	for (int x = minMapTileX; x < minMapTileX + mapTilesW; x++)
 	{
-		for (int y = 0; y < mapTilesH; y++)
+		for (int y = minMapTileY; y < minMapTileY + mapTilesH; y++)
 		{
 			Color empty(0,0,0,0);
 			out.fill(empty, true);
 			int count = 0;
 			printf(" TILE %d %d\n", x, y);
 
-			for (int ix = 0; ix < numTilesX; ix++)
+			for (int ix = minTileX; ix < minTileX + numTilesX; ix++)
 			{
-				for (int iy = numTilesY -1; iy >= 0; iy--)
+				for (int iy = minTileY + numTilesY -1; iy >= minTileY; iy--)
 				{
 
 					int destX = (ix+iy) * dx - x * outTileSize;
-					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - inputTileH - dy* numTilesX;
+					int destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - maxImH - dy* numTilesX;
  					//, inputTileW, inputTileH};
-					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -inputTileH)
+					if (destX >= outTileSize || destY >= outTileSize || destX <= -inputTileW || destY <= -maxImH)
 					{
 						continue;
 					}
 
 					try
 					{
-						Image in(file(ix,iy,baseName));
+						Image in(file(ix,iy,baseName.c_str()));
 
 						destX = (ix+iy) * dx - x * outTileSize;
 						destY = outTileSize - ((iy-ix)*dy - y * outTileSize)  - in.GetHeight() - dy* numTilesX;
