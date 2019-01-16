@@ -377,23 +377,31 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 			}
 		}
 
-		if (m_isometric)
-
 	}
 	else
 	{
-		m_image->fill(m_bgColor);
-		renderMap(m_positions);
-		if (m_drawScale) {
-			renderScale();
+		if (m_isometric)
+		{
+			int max = m_xMax > m_yMax ? m_xMax : m_yMax;
+			int min = m_xMin < m_yMin ? m_xMin : m_yMin;
+
+			renderMapIsometric(output, max - min, m_positions,  m_zoom);
 		}
-		if (m_drawOrigin) {
-			renderOrigin();
+		else
+		{
+			m_image->fill(m_bgColor);
+			renderMap(m_positions);
+			if (m_drawScale) {
+				renderScale();
+			}
+			if (m_drawOrigin) {
+				renderOrigin();
+			}
+			if (m_drawPlayers) {
+				renderPlayers(input_path);
+			}
+			writeImage(output);
 		}
-		if (m_drawPlayers) {
-			renderPlayers(input_path);
-		}
-		writeImage(output);
 	}
 	closeDatabase();
 	printUnknown();
