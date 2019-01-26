@@ -14,7 +14,7 @@
 
 class BlockDecoder {
 public:
-	typedef std::vector<std::pair<std::string, std::string>> NodeMetaData;
+	typedef std::vector<std::pair<std::string, std::string> > NodeMetaData;
 #if __cplusplus >= 201103L
 	typedef std::unordered_map<int, NodeMetaData> MetaData;
 	typedef std::unordered_map<int, std::string> NameMap;
