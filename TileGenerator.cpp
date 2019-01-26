@@ -357,7 +357,7 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 							fn << "iso_metadata_" << output << ".txt";
 
 							std::ofstream os;
-							os.open(fn.str(), std::ios::out);
+							os.open(fn.str().c_str(), std::ios::out);
 
 							os << "BaseName: " << output << std::endl;
 							os << "NumTiles: " << m_numTilesX << " " << m_numTilesY << std::endl;
@@ -944,7 +944,7 @@ static int IsoColoredCube(Image *im, int x, int y, int z, int scale, Color const
 
 	if (prevColor != c)
 	{
-		static double const brightness[] { 0.8, 0.6, 1.0 };
+		static double const brightness[] = { 0.8, 0.6, 1.0 };
 		ImagePoint points[4];
 		for (int quad = 0; quad < 3; quad++)
 		{
