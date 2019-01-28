@@ -35,7 +35,8 @@ void usage()
 			"  --colors <colors.txt>\n"
 			"  --scales [t][b][l][r]\n"
 			"  --marker <string>\n"
-			"  --isometric  \n"
+			"  --isometric\n"
+			"  --isoshadeheight <y>\n"
 			"Color format: '#000000'\n";
 	std::cout << usage_text;
 }
@@ -95,6 +96,7 @@ int main(int argc, char *argv[])
 		{"marker", required_argument, 0, 'm'},
 		{"noemptyimage", no_argument, 0, 'n'},
 		{"isometric", no_argument, 0, 'I'},
+		{"isoshadeheight", required_argument, 0, 'O'},
 		{0, 0, 0, 0}
 	};
 
@@ -223,6 +225,13 @@ int main(int argc, char *argv[])
 				break;
 			case 'I':
 				generator.setIsometric(true);
+				break;
+			case 'O': {
+					std::istringstream iss(optarg);
+					int isheight;;
+					iss >> isheight;
+					generator.setIsoShadeHeight(isheight);
+				}
 				break;
 			default:
 				exit(1);

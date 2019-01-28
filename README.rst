@@ -114,3 +114,11 @@ scales:
 
 isometric:
     Draws the map in isometric view.
+
+isoshadeheight:
+    In isometric mode the color is shaded darker for low terrain, and lighter (more white) for higher terrain.
+    This makes shure high mountains stand out against flat plains. Because there's no perspective it is otherwise hard
+    to see the height differences. This height gives the height (above --min-y) at which the color will be unchanged.
+    The default is 75, which works quite well on magen v7 terrain. If you have very high mountains (or buildings) you \
+    probably want to set this higher.
+

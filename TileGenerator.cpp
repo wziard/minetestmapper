@@ -103,6 +103,7 @@ TileGenerator::TileGenerator():
 	m_tileW(INT_MAX),
 	m_tileH(INT_MAX),
 	m_zoom(1),
+	m_isoShadeHeight(75),
 	m_scales(SCALE_LEFT | SCALE_TOP)
 {
 }
@@ -188,6 +189,12 @@ void TileGenerator::setIsometric(bool iso)
 {
 	m_isometric = iso;
 }
+
+void TileGenerator::setIsoShadeHeight(int h)
+{
+	m_isoShadeHeight = h;
+}
+
 
 void TileGenerator::setBackend(std::string backend)
 {
@@ -989,7 +996,8 @@ int TileGenerator::renderMapBlockIsometric(BlockDecoder const &blk, BlockPos con
 				// shade by height. With rather arbitrarily chosen values which seem to look right on most maps.
 				int h = pos.y*16+y - m_yMin;
 
-				c = c.gamma(.25 +h/100.0);
+				double shadeFactor = .75/ m_isoShadeHeight;
+				c = c.gamma(.25 +h*shadeFactor);
 				int my = IsoColoredCube(to, pos.x*16 + x, pos.y*16+y, pos.z*16+z, scale, c, yShift);
 
 				minY = my < minY ? my : minY;
