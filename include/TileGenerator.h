@@ -98,7 +98,7 @@ public:
 	void sortPositionsIntoTiles();
 	void addMarker(std::string marker);
 	void setIsometric(bool iso);
-
+	void setIsoShadeHeight(int h);
 private:
 	void parseColorsStream(std::istream &in);
 	void openDb(const std::string &input);
@@ -155,6 +155,7 @@ private:
 	int m_tileH;
 	int m_mapWidth;
 	int m_mapHeight;
+	int m_isoShadeHeight;
 
 	ColorMap m_colorMap;
 	BitmapThing m_readPixels;
