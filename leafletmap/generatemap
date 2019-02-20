@@ -1,0 +1,61 @@
+#!/bin/bash
+echo " this script generates a 'slippy' map of your minetest world, ready to put on a server somewhere (or open locally with any browser)."
+
+
+input=$1
+
+if [ -z "$input" ]; then
+	echo "usage: ./generatemap <path-to-world-folder>"
+	exit
+fi
+
+
+if [ -d "$input" ]; then
+	if [ -f "$input"/world.mt ]; then
+		echo "'$input' looks OK."
+	else
+		echo "$input/world.mt doesn't exist, are you sure this is a minetest world folder?"
+		exit
+	fi
+else
+	echo "Can't open '$input' as a minetest world folder."
+	exit
+fi
+
+if [ -x  ../buildpyramid/buildpyramid ]; then
+	echo buildpyramid utility ok!
+else
+	echo Please compile the buildpyramid utility in ../buildpyramid first.
+	exit
+fi
+
+if [ -x ../minetestmapper ]; then
+	echo minetestmapper utility ok!
+else
+	echo Please compile minetestmapper first.
+	exit
+fi
+
+if [ -e map ]; then
+	echo the 'map' subdir already exists... aborting.
+	exit
+fi
+
+cp ../buildpyramid/leaflet.js tiles
+cp ../buildpyramid/leaflet.css tiles
+
+
+mkdir map
+
+# now generate the map
+cd map
+../../minetestmapper -i "$input" -o map.png --colors ../../colors.txt --tilesize 1024x1024 --drawalpha  --noemptyimage --min-y -32 | tee ../mmOutput
+
+../../buildpyramid/buildpyramid metadata_map.png.txt map.jpg
+rm tile*.png
+cd ..
+
+#zip up the map data
+zip -r map-`date +"%Y%m%d-%H%M%S"`.zip map/
+
+rm -rf map
