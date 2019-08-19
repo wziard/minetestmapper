@@ -380,6 +380,9 @@ void TileGenerator::generate(const std::string &input, const std::string &output
 						}
 
 					}
+					ostringstream fn;
+					fn << "tile_" << (x + minTileX) << '_' << (y + minTileY) << '_' << output;
+					writeImage(fn.str());
 				}
 			}
 		}
