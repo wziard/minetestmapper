@@ -102,8 +102,8 @@ TileGenerator::TileGenerator():
 	m_geomH2(30000),
 	m_tileW(INT_MAX),
 	m_tileH(INT_MAX),
-	m_zoom(1),
 	m_isoShadeHeight(75),
+	m_zoom(1),
 	m_scales(SCALE_LEFT | SCALE_TOP)
 {
 }
