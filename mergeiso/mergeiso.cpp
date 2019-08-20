@@ -135,8 +135,8 @@ int main(int argc, char **argv)
 	mapTilesW++;
 	mapTilesH++;
 
-	int minMapTileX = (minTileX + minTileZ) * dx / outTileSize - 1;
-	int minMapTileY = (minTileX - minTileZ) * dy / outTileSize - 1;
+	int minMapTileX = (minTileX - (numTilesZ + minTileZ)) * dx / outTileSize - 1;
+	int minMapTileY = (minTileX + minTileZ) * dy / outTileSize - 1;
 
 //	int inTop = in->h - dy;
 //	int halfHeight = inTop + (totalMapH - inTop) / 2;
